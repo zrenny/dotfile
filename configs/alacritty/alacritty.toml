@@ -1,0 +1,440 @@
+# alacritty.toml
+
+live_config_reload = true
+
+[env]
+TERM   = "alacritty"
+# TERM = "xterm-256color"
+
+[window]
+decorations     = "none"
+dynamic_padding = false
+dynamic_title   = true
+opacity         = 0.7
+startup_mode    = "Maximized"
+title           = "Alacritty"
+option_as_alt   = "Both"
+
+[window.dimensions]
+columns = 0
+lines   = 0
+
+[window.padding]
+x = 5
+y = 5
+
+[scrolling]
+history = 12000
+
+[font]
+builtin_box_drawing = false
+size                = 13
+
+[font.bold]
+family = "SauceCodePro Nerd Font"
+style  = "Bold"
+
+[font.bold_italic]
+family = "SauceCodePro Nerd Font"
+style  = "Bold Italic"
+
+[font.glyph_offset]
+x = 0
+y = 0
+
+[font.italic]
+family = "SauceCodePro Nerd Font"
+style  = "Italic"
+
+[font.normal]
+family = "SauceCodePro Nerd Font"
+style  = "Regular"
+
+[font.offset]
+x = 0
+y = 0
+
+[colors.primary]
+background = "#232323"
+foreground = "#C0C5CE"
+
+[colors.bright]
+black   = "#5C5C5C"
+blue    = "#6699CC"
+cyan    = "#5FB3B3"
+green   = "#A6BC99"
+magenta = "#824F82"
+red     = "#E57373"
+white   = "#F3F4F5"
+yellow  = "#FAC863"
+
+[colors.cursor]
+cursor = "CellForeground"
+text   = "CellBackground"
+
+[colors.vi_mode_cursor]
+cursor = "#FFFF00"
+text   = "CellBackground"
+
+[colors.footer_bar]
+background = "#C0C5CE"
+foreground = "#232323"
+
+[colors.hints.end]
+background = "CellBackground"
+foreground = "CellForeground"
+
+[colors.hints.start]
+background = "CellBackground"
+foreground = "CellForeground"
+
+[colors.line_indicator]
+background = "None"
+foreground = "None"
+
+[colors.normal]
+black   = "#232323"
+blue    = "#6699CC"
+cyan    = "#5FB3B3"
+green   = "#A6BC99"
+magenta = "#824F82"
+red     = "#E57373"
+white   = "#C0C5CE"
+yellow  = "#FAC863"
+
+[colors.search.focused_match]
+background = "CellBackground"
+foreground = "CellForeground"
+
+[colors.search.matches]
+background = "CellBackground"
+foreground = "CellForeground"
+
+[colors.selection]
+background = "CellForeground"
+text       = "CellBackground"
+
+#[colors.vi_mode_cursor]
+#cursor = "CellForeground"
+#text   = "CellBackground"
+
+[bell]
+animation = "EaseOutExpo"
+color     = "#C0C5CE"
+command   = "None"
+duration  = 0
+
+# [selection]
+# save_to_clipboard     = false
+# semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
+
+[cursor]
+unfocused_hollow = true
+vi_mode_style = "Block"
+
+[mouse]
+hide_when_typing = true
+
+[debug]
+highlight_damage   = false
+log_level          = "Warn"
+persistent_logging = false
+print_events       = false
+render_timer       = false
+
+# vi mode keybindings
+# [[keyboard.bindings]]
+# action = "ScrollToBottom"
+# key    = "Space"
+# mods   = "Control"
+# mode   = "Vi"
+# 
+# [[keyboard.bindings]]
+# action = "ToggleViMode"
+# key    = "Space"
+# mods   = "Control"
+# 
+# [[keyboard.bindings]]
+# action = "ScrollToBottom"
+# key    = "I"
+# mode   = "Vi"
+# 
+# 
+# [[keyboard.bindings]]
+# action = "ToggleViMode"
+# key    = "I"
+# mode   = "Vi"
+# 
+# [[keyboard.bindings]]
+# key    = "C"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ScrollToBottom"
+# 
+# [[keyboard.bindings]]
+# key    = "C"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ToggleViMode"
+# 
+# [[keyboard.bindings]]
+# key    = "Escape"
+# mode   = "Vi"
+# action = "ClearSelection"
+# 
+# [[keyboard.bindings]]
+# key    = "Y"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ScrollLineUp"
+# 
+# [[keyboard.bindings]]
+# key    = "E"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ScrollLineDown"
+# 
+# [[keyboard.bindings]]
+# key    = "G"
+# mode   = "Vi"
+# action = "ScrollToTop"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "G"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "ScrollToBottom"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "B"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ScrollPageUp"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "F"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ScrollPageDown"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "U"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ScrollHalfPageUp"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "D"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ScrollHalfPageDown"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Y"
+# mode   = "Vi"
+# action = "Copy"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Y"
+# mode   = "Vi"
+# action = "ClearSelection"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "V"
+# mode   = "Vi"
+# action = "ToggleNormalSelection"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "V"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "ToggleLineSelection"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "V"
+# mods   = "Control"
+# mode   = "Vi"
+# action = "ToggleBlockSelection"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "V"
+# mods   = "Alt"
+# mode   = "Vi"
+# action = "ToggleSemanticSelection"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Return"
+# mode   = "Vi"
+# action = "Open"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "K"
+# mode   = "Vi"
+# action = "Up"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "J"
+# mode   = "Vi"
+# action = "Down"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "H"
+# mode   = "Vi"
+# action = "Left"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "L"
+# mode   = "Vi"
+# action = "Right"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Up"
+# mode   = "Vi"
+# action = "Up"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Down"
+# mode   = "Vi"
+# action = "Down"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Left"
+# mode   = "Vi"
+# action = "Left"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Right"
+# mode   = "Vi"
+# action = "Right"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Key-1"
+# mode   = "Vi"
+# action = "First"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Key3"
+# mode   = "Vi"
+# action = "Last"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Key5"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "FirstOccupied"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "H"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "High"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "M"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "Middle"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "L"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "Low"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "B"
+# mode   = "Vi"
+# action = "SemanticLeft"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "W"
+# mode   = "Vi"
+# action = "SemanticRight"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "E"
+# mode   = "Vi"
+# action = "SemanticRightEnd"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "B"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "WordLeft"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "W"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "WordRight"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "E"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "WordRightEnd"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Key4"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "Bracket"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Slash"
+# mode   = "Vi"
+# action = "SearchForward"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "Slash"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "SearchBackward"
+# 
+# [[keyboard.bindings]]
+# key    = "N"
+# mode   = "Vi"
+# action = "SearchNext"
+# 
+# 
+# [[keyboard.bindings]]
+# key    = "N"
+# mods   = "Shift"
+# mode   = "Vi"
+# action = "SearchPrevious"
+
