@@ -45,6 +45,15 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
+    dependencies = {
+      {
+        "kevinhwang91/nvim-ufo",
+        dependencies = "kevinhwang91/promise-async",
+        config = function()
+          require("ufo").setup()
+        end,
+      },
+    },
     lazy = false,
     priority = 900,
     config = function()

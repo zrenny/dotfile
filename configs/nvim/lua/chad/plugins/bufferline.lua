@@ -1,23 +1,33 @@
 return {
   "akinsho/bufferline.nvim",
-  dependencies = { "nvim-tree/nvim-web-devicons", "moll/vim-bbye" },
+  dependencies = {
+    "nvim-tree/nvim-web-devicons",
+    "moll/vim-bbye",
+  },
+  event = "VimEnter",
   config = function()
-    require("bufferline").setup({
+    local bufferline = require("bufferline")
+
+    bufferline.setup({
       options = {
-        numbers = "none", -- | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
-        close_command = "Bdelete! %d", -- can be a string | function, see "Mouse actions"
-        right_mouse_command = "Bdelete! %d", -- can be a string | function, see "Mouse actions"
-        left_mouse_command = "buffer %d", -- can be a string | function, see "Mouse actions"
-        middle_mouse_command = nil, -- can be a string | function, see "Mouse actions"
+        mode = "buffers",                           -- set to "tabs" to only show tabpages instead
+        style_preset = bufferline.style_preset.default, -- or bufferline.style_preset.minimal,
+        themable = true,                            -- allows highlight groups to be overridden i.e. sets highlights as default
+        numbers = "none",                           -- | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
+        close_command = "Bdelete! %d",              -- can be a string | function, see "Mouse actions"
+        right_mouse_command = "Bdelete! %d",        -- can be a string | function, see "Mouse actions"
+        left_mouse_command = "buffer %d",           -- can be a string | function, see "Mouse actions"
+        middle_mouse_command = nil,                 -- can be a string | function, see "Mouse actions"
         -- NOTE: this plugin is designed with this icon in mind,
         -- and so changing this is NOT recommended, this is intended
         -- as an escape hatch for people who cannot bear it for whatever reason
-        indicator_icon = "▎",
-        buffer_close_icon = "",
-        -- buffer_close_icon = '',
+        indicator = {
+          icon = "▎",
+          style = "icon",
+        },
+        buffer_close_icon = "󰅖",
         modified_icon = "●",
         close_icon = "",
-        -- close_icon = '',
         left_trunc_marker = "",
         right_trunc_marker = "",
         --- name_formatter can be used to change the buffer's label in the bufferline.
@@ -54,7 +64,14 @@ return {
         --     return true
         --   end
         -- end,
-        offsets = { { filetype = "NvimTree", text = "", padding = 1 } },
+        offsets = {
+          {
+            filetype = "NvimTree",
+            text = "",
+            -- padding = 1
+          },
+        },
+        color_icons = true, -- whether or not to add the filetype icon highlights
         show_buffer_icons = true,
         show_buffer_close_icons = true,
         show_close_icon = true,
@@ -163,6 +180,6 @@ return {
           guibg = { attribute = "bg", highlight = "Normal" },
         },
       },
-    })  
-  end
+    })
+  end,
 }

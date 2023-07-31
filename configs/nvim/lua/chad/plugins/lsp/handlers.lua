@@ -5,7 +5,6 @@ local lsp = vim.lsp.buf
 local diagnostic = vim.diagnostic
 local opts = { silent = true, noremap = true }
 
-
 M.setup = function()
   local signs = {
     { name = "DiagnosticSignError", text = "" },
@@ -66,20 +65,20 @@ local function lsp_highlight_document(client)
 end
 
 local function lsp_keymaps(bufnr)
-    keymap(bufnr, "n", "<leader>rn", lsp.rename, opts )
-    keymap(bufnr, "n", "<leader>ca", lsp.code_action, opts )
-    keymap(bufnr, "n", "gd", lsp.definition, opts )
-    keymap(bufnr, "n", "gD", lsp.declaration, opts)
-    keymap(bufnr, "n", "gi", lsp.implementation, opts )
-    keymap(bufnr, "n", "K", lsp.hover, opts )
-    keymap(bufnr, "n", "<C-k", lsp.signature_help, opts)
-    keymap(bufnr, "n", "gr", lsp.references, opts)
-    keymap(bufnr, "n", "[d", '<cmd>lua vim.diagnostic.goto_prev({ border = "rounded" })<CR>', opts)
-    keymap(bufnr, "n", "gl", diagnostic.open_float, opts)
-    keymap(bufnr, "n", "]d", '<cmd>lua vim.diagnostic.goto_next({ border = "rounded" })<CR>', opts)
-    keymap(bufnr, "n", "<leader>q", diagnostic.setloclist, opts)
-    vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
-    -- keymap(bufnr, "n", "gr", require("telescope.builtin").lsp_references, opts )
+  keymap(bufnr, "n", "<leader>rn", lsp.rename, opts)
+  keymap(bufnr, "n", "<leader>ca", lsp.code_action, opts)
+  keymap(bufnr, "n", "gd", lsp.definition, opts)
+  keymap(bufnr, "n", "gD", lsp.declaration, opts)
+  keymap(bufnr, "n", "gi", lsp.implementation, opts)
+  keymap(bufnr, "n", "K", lsp.hover, opts)
+  keymap(bufnr, "n", "<C-k", lsp.signature_help, opts)
+  keymap(bufnr, "n", "gr", lsp.references, opts)
+  keymap(bufnr, "n", "[d", '<cmd>lua vim.diagnostic.goto_prev({ border = "rounded" })<CR>', opts)
+  keymap(bufnr, "n", "gl", diagnostic.open_float, opts)
+  keymap(bufnr, "n", "]d", '<cmd>lua vim.diagnostic.goto_next({ border = "rounded" })<CR>', opts)
+  keymap(bufnr, "n", "<leader>q", diagnostic.setloclist, opts)
+  vim.cmd([[ command! Format execute 'lua vim.lsp.buf.formatting()' ]])
+  -- keymap(bufnr, "n", "gr", require("telescope.builtin").lsp_references, opts )
 end
 
 M.on_attach = function(client, bufnr)
@@ -92,7 +91,12 @@ end
 
 local status_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
 if status_ok then
-  M.capabilities = cmp_nvim_lsp.default_capabilities()
+  local default_capabilities = cmp_nvim_lsp.default_capabilities()
+  default_capabilities.textDocument.foldingRange = {
+    dynamicRegistration = false,
+    lineFoldingOnly = true,
+  }
+  M.capabilities = default_capabilities
 end
 
 return M

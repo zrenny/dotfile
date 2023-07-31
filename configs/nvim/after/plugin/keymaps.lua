@@ -6,6 +6,7 @@ local telescope_builtin = require("telescope.builtin")
 local harpoon_mark = require("harpoon.mark")
 local harpoon_ui = require("harpoon.ui")
 local dapui = require("dapui")
+local ufo = require("ufo")
 
 local chad = api.nvim_create_augroup("Chad", {
     clear = false
@@ -68,3 +69,7 @@ keymap("n", "<leader>dc", cmd.DapContinue, opts)
 keymap("n", "<leader>dr", ":lua require('dapui').open({reset = true})<CR>", opts)
 keymap("n", "<leader>df", dapui.float_element, opts)
 keymap("n", "<leader>de", dapui.eval, opts)
+
+-- Ufo
+keymap("n", "zR", ufo.openAllFolds, opts)
+keymap("n", "zM", ufo.closeAllFolds, opts)
