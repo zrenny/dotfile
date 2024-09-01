@@ -10,6 +10,7 @@ return {
 	},
 	{
 		"lukas-reineke/indent-blankline.nvim",
+    version = "2.20.8",
 		config = function()
 			require("indent_blankline").setup({
 				space_char_blankline = " ",

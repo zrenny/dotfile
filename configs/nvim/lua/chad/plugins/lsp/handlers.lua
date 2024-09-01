@@ -1,9 +1,9 @@
 local M = {}
 
-local keymap = vim.nvim_buf_set_keymap
+-- local keymap = vim.nvim_buf_set_keymap
 local lsp = vim.lsp.buf
 local diagnostic = vim.diagnostic
-local opts = { silent = true, noremap = true }
+-- local opts = { silent = true, noremap = true }
 
 M.setup = function()
   local signs = {
@@ -64,28 +64,29 @@ local function lsp_highlight_document(client)
   end
 end
 
-local function lsp_keymaps(bufnr)
-  keymap(bufnr, "n", "<leader>rn", lsp.rename, opts)
-  keymap(bufnr, "n", "<leader>ca", lsp.code_action, opts)
-  keymap(bufnr, "n", "gd", lsp.definition, opts)
-  keymap(bufnr, "n", "gD", lsp.declaration, opts)
-  keymap(bufnr, "n", "gi", lsp.implementation, opts)
-  keymap(bufnr, "n", "K", lsp.hover, opts)
-  keymap(bufnr, "n", "<C-k", lsp.signature_help, opts)
-  keymap(bufnr, "n", "gr", lsp.references, opts)
-  keymap(bufnr, "n", "[d", '<cmd>lua vim.diagnostic.goto_prev({ border = "rounded" })<CR>', opts)
-  keymap(bufnr, "n", "gl", diagnostic.open_float, opts)
-  keymap(bufnr, "n", "]d", '<cmd>lua vim.diagnostic.goto_next({ border = "rounded" })<CR>', opts)
-  keymap(bufnr, "n", "<leader>q", diagnostic.setloclist, opts)
-  vim.cmd([[ command! Format execute 'lua vim.lsp.buf.formatting()' ]])
-  -- keymap(bufnr, "n", "gr", require("telescope.builtin").lsp_references, opts )
-end
+-- local function lsp_keymaps(bufnr)
+--   keymap(bufnr, "n", "<leader>rn", lsp.rename, opts)
+--   keymap(bufnr, "n", "<leader>ca", lsp.code_action, opts)
+--   keymap(bufnr, "n", "gd", lsp.definition, opts)
+--   keymap(bufnr, "n", "gD", lsp.declaration, opts)
+--   keymap(bufnr, "n", "gi", lsp.implementation, opts)
+--   keymap(bufnr, "n", "K", lsp.hover, opts)
+--   keymap(bufnr, "n", "<leader>D", lsp.type_definition, opts)
+--   keymap(bufnr, "n", "<C-k>", lsp.signature_help, opts)
+--   keymap(bufnr, "n", "gr", lsp.references, opts)
+--   keymap(bufnr, "n", "[d", '<cmd>lua vim.diagnostic.goto_prev({ border = "rounded" })<CR>', opts)
+--   keymap(bufnr, "n", "gl", '<cmd>lua vim.diagnostic.open_float()', opts)
+--   keymap(bufnr, "n", "]d", '<cmd>lua vim.diagnostic.goto_next({ border = "rounded" })<CR>', opts)
+--   keymap(bufnr, "n", "<leader>q", diagnostic.setloclist, opts)
+--   vim.cmd([[ command! Format execute 'lua vim.lsp.buf.formatting()' ]])
+--   -- keymap(bufnr, "n", "gr", require("telescope.builtin").lsp_references, opts )
+-- end
 
 M.on_attach = function(client, bufnr)
   if client.name == "tsserver" then
     client.server_capabilities.documentFormattingProvider = false
   end
-  lsp_keymaps(bufnr)
+  -- lsp_keymaps(bufnr)
   lsp_highlight_document(client)
 end
 

@@ -19,7 +19,9 @@ local servers = {
   "taplo",
   "terraformls",
   "tflint",
+  "intelephense",
   "yamlls",
+  "gopls",
 }
 
 return {
@@ -50,7 +52,11 @@ return {
         "kevinhwang91/nvim-ufo",
         dependencies = "kevinhwang91/promise-async",
         config = function()
-          require("ufo").setup()
+          require("ufo").setup({
+            provider_selector = function()
+              return { "lsp", "indent" }
+            end,
+          })
         end,
       },
     },
@@ -85,12 +91,18 @@ return {
       local formatting = null_ls.builtins.formatting
       local diagnostics = null_ls.builtins.diagnostics
       local actions = null_ls.builtins.code_actions
+      local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
 
       null_ls.setup({
         sources = {
           --actions
+          actions.eslint_d,
 
           -- formatting
+          formatting.gofumpt,
+          formatting.goimports_reviser,
+          formatting.golines,
+          formatting.clang_format,
           formatting.prettier,
           formatting.stylua,
           formatting.terraform_fmt,
@@ -101,6 +113,7 @@ return {
           formatting.taplo,
 
           -- diagnostics
+          diagnostics.clang_check,
           diagnostics.typos,
           diagnostics.eslint,
           diagnostics.flake8,
@@ -108,6 +121,21 @@ return {
           diagnostics.terraform_validate,
           diagnostics.yamllint,
         },
+        on_attach = function(client, bufnr)
+          if client.supports_method("textDocument/formatting") then
+            vim.api.nvim_clear_autocmds({
+              group = augroup,
+              buffer = bufnr,
+            })
+            vim.api.nvim_create_autocmd("BufWritePre", {
+              group = augroup,
+              buffer = bufnr,
+              callback = function()
+                vim.lsp.buf.format({ bufnr = bufnr })
+              end,
+            })
+          end
+        end,
       })
     end,
   },
