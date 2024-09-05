@@ -14,4 +14,5 @@ vim.opt.rtp:prepend(lazypath)
 
 require("chad.options")
 require("chad.keymaps")
+require("chad.abbrev")
 require("lazy").setup("chad.plugins")

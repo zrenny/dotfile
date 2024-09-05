@@ -61,7 +61,7 @@ return {
     cmd([[colorscheme dracula]])
     hl(0, "Normal", { bg = "none" })
     hl(0, "NormalNC", { bg = "none" })
-    hl(0, "Normalfloat", { bg = "none" })
+    hl(0, "Normalfloat", { bg = "#4B5263" })
     hl(0, "Visual", { bg = "#757575" })
     hl(0, "NvimTreeNormal", { bg = "none", ctermbg = "none" })
   end,
