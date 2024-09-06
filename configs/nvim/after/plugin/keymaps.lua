@@ -139,7 +139,7 @@ api.nvim_create_autocmd("LspAttach", {
     keymap("n", "gd", buf.definition, opts)
     keymap("n", "K", buf.hover, opts)
     keymap("n", "gI", buf.implementation, opts)
-    keymap("n", "<C-k>", buf.signature_help, opts)
+    keymap("n", "gs", buf.signature_help, opts)
     -- keymap('n', '<leader>wa', buf.add_workleader_folder, opts)
     -- keymap('n', '<leader>wr', buf.remove_workleader_folder, opts)
     -- keymap('n', '<leader>wl', function()
