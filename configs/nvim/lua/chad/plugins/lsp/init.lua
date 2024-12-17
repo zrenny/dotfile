@@ -42,6 +42,13 @@ return {
       require("mason-lspconfig").setup({
         ensure_installed = servers,
         automatic_installation = true,
+        handlers = {
+          function(server_name)
+            if server_name == "tsserver" then
+              server_name = "ts_ls"
+            end
+          end,
+        },
       })
     end,
   },

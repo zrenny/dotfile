@@ -84,6 +84,8 @@ end
 
 M.on_attach = function(client, bufnr)
   if client.name == "tsserver" then
+    client.name = "ts_ls"
+
     client.server_capabilities.documentFormattingProvider = false
   end
   -- lsp_keymaps(bufnr)

@@ -4,6 +4,9 @@ return {
     usePlaceholders = true,
     analyses = {
       unusedparams = true,
-    }
-  }
+    },
+    gopls = {
+      buildFlags = { "-tags=debug dev" },
+    },
+  },
 }

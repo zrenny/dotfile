@@ -104,6 +104,8 @@ keymap("n", "<F6>", dapui.toggle, { desc = "Debug: See last session result" })
 keymap("n", "<F7>", ":lua require('dapui').open({reset = true})<CR>", { desc = "Debug: Open dapui" })
 keymap("n", "<F8>", dapui.float_element, { desc = "Debug: Open floating window" })
 keymap("n", "<F9>", dapui.eval, { desc = "Debug: Evaluate" })
+keymap("n", "<leader>w", dapui.open, { desc = "Debug: Open" })
+keymap("n", "<leader>W", dapui.close, { desc = "Debug: Close" })
 -- keymap("n", "<leader>dgt", dap_go.debug_test(), { desc = "Debug: Go test cases" })
 -- keymap("n", "<leader>dgl", dap_go.debug_last(), { desc = "Debug: Go debug last run test cases" })
 

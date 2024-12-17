@@ -48,8 +48,13 @@ return {
       {
         "L3MON4D3/LuaSnip",
         dependencies = "rafamadriz/friendly-snippets", -- a bunch of snippets to
-        opts = { history = true, updateevents = "TextChanged,TextChangedI" },
-        version = "2.*",                           -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+        opts = {
+          history = true,
+          uregion_check_events = "InsertEnter",
+          delete_check_events = "TextChanged,InsertLeave",
+          pdateevents = "TextChanged,TextChangedI",
+        },
+        version = "2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
         build = "make install_jsregexp",
         config = function(_, opts)
           require("luasnip").config.set_config(opts)
@@ -208,20 +213,28 @@ return {
           native_menu = false,
         },
       })
-      function leave_snippet()
-        if
-            ((vim.v.event.old_mode == "s" and vim.v.event.new_mode == "n") or vim.v.event.old_mode == "i")
-            and require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()]
-            and not require("luasnip").session.jump_active
-        then
-          require("luasnip").unlink_current()
-        end
-      end
-
-      -- stop snippets when you leave to normal mode
-      vim.api.nvim_command([[
-    autocmd ModeChanged * lua leave_snippet()
-]])
+      vim.api.nvim_create_autocmd("ModeChanged", {
+        group = vim.api.nvim_create_augroup("UnlinkLuaSnipSnippetOnModeChange", {
+          clear = true,
+        }),
+        pattern = { "s:n", "i:*" },
+        desc = "Forget the current snippet when leaving the insert mode",
+        callback = function(evt)
+          -- If we have n active nodes, n - 1 will still remain after a `unlink_current()` call.
+          -- We unlink all of them by wrapping the calls in a loop.
+          while true do
+            if
+                luasnip.session
+                and luasnip.session.current_nodes[evt.buf]
+                and not luasnip.session.jump_active
+            then
+              luasnip.unlink_current()
+            else
+              break
+            end
+          end
+        end,
+      })
     end,
   },
 }

@@ -25,6 +25,50 @@ vim.g.maplocalleader = " "
 
 keymap("c", "<C-a>", "<Home>")
 
+function RemoveCurrentQuickfixEntry()
+  local qflist = vim.fn.getqflist()
+  local lnum = vim.fn.line(".") - 1
+  table.remove(qflist, lnum + 1)
+  vim.fn.setqflist(qflist)
+  vim.cmd("copen")
+end
+
+-- Set keymap only inside the Quickfix window
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function()
+    vim.api.nvim_buf_set_keymap(
+      0,
+      "n",
+      "<leader>dc",
+      ":lua RemoveCurrentQuickfixEntry()<CR>",
+      { noremap = true, silent = true }
+    )
+  end,
+})
+
+function RemoveCurrentLocListEntry()
+  local loclist = vim.fn.getloclist(0)
+  local lnum = vim.fn.line(".") - 1
+  table.remove(loclist, lnum + 1)
+  vim.fn.setloclist(0, loclist)
+  vim.cmd("lopen")
+end
+
+-- Set keymap only inside the Location list window
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "qf",
+  callback = function()
+    vim.api.nvim_buf_set_keymap(
+      0,
+      "n",
+      "<leader>dl",
+      ":lua RemoveCurrentLocListEntry()<CR>",
+      { noremap = true, silent = true }
+    )
+  end,
+})
+
 -- Normal --
 keymap("n", "L", "$", opts)
 keymap("n", "H", "^", opts)
