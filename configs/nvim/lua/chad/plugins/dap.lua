@@ -48,28 +48,40 @@ return {
         },
       },
     })
+
+    local function deleteKeymapIfExists(mode, lhs)
+      local maps = vim.api.nvim_get_keymap(mode)
+      for _, map in ipairs(maps) do
+        if map.lhs == lhs then
+          vim.api.nvim_del_keymap(mode, lhs)
+          return true
+        end
+      end
+      return false
+    end
+
     local function restore_keymaps()
       -- Unmap or rebind any keys
 
-      vim.api.nvim_del_keymap("n", "B")
-      vim.api.nvim_del_keymap("n", "C")
-      vim.api.nvim_del_keymap("n", "D")
-      vim.api.nvim_del_keymap("n", "K")
-      vim.api.nvim_del_keymap("n", "O")
-      vim.api.nvim_del_keymap("n", "P")
-      vim.api.nvim_del_keymap("n", "R")
-      vim.api.nvim_del_keymap("n", "S")
-      vim.api.nvim_del_keymap("n", "a")
-      vim.api.nvim_del_keymap("n", "b")
-      vim.api.nvim_del_keymap("n", "c")
-      vim.api.nvim_del_keymap("n", "n")
-      vim.api.nvim_del_keymap("n", "o")
-      vim.api.nvim_del_keymap("n", "p")
-      vim.api.nvim_del_keymap("n", "r")
-      vim.api.nvim_del_keymap("n", "s")
-      vim.api.nvim_del_keymap("n", "u")
-      vim.api.nvim_del_keymap("n", "w")
-      vim.api.nvim_del_keymap("v", "p")
+      deleteKeymapIfExists("n", "B")
+      deleteKeymapIfExists("n", "C")
+      deleteKeymapIfExists("n", "D")
+      deleteKeymapIfExists("n", "K")
+      deleteKeymapIfExists("n", "O")
+      deleteKeymapIfExists("n", "P")
+      deleteKeymapIfExists("n", "R")
+      deleteKeymapIfExists("n", "S")
+      deleteKeymapIfExists("n", "a")
+      deleteKeymapIfExists("n", "b")
+      deleteKeymapIfExists("n", "c")
+      deleteKeymapIfExists("n", "n")
+      deleteKeymapIfExists("n", "o")
+      deleteKeymapIfExists("n", "p")
+      deleteKeymapIfExists("n", "r")
+      deleteKeymapIfExists("n", "s")
+      deleteKeymapIfExists("n", "u")
+      deleteKeymapIfExists("n", "w")
+      deleteKeymapIfExists("v", "p")
       print("Debug session ended and keymaps restored.")
     end
 

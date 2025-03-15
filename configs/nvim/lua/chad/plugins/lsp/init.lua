@@ -11,7 +11,7 @@ local servers = {
   "graphql",
   "html",
   "helm_ls",
-  "tsserver",
+  "ts_ls",
   "kotlin_language_server",
   "prismals",
   "pyright",
@@ -25,6 +25,18 @@ local servers = {
 }
 
 return {
+  {
+    "cordx56/rustowl",
+    dependencies = { "neovim/nvim-lspconfig" },
+    config = function()
+      local lspconfig = require("lspconfig")
+      lspconfig.rustowl.setup({
+        trigger = {
+          hover = false,
+        },
+      })
+    end,
+  },
   {
     "williamboman/mason.nvim",
     build = ":MasonUpdate",
@@ -42,13 +54,6 @@ return {
       require("mason-lspconfig").setup({
         ensure_installed = servers,
         automatic_installation = true,
-        handlers = {
-          function(server_name)
-            if server_name == "tsserver" then
-              server_name = "ts_ls"
-            end
-          end,
-        },
       })
     end,
   },

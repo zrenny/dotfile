@@ -109,11 +109,54 @@ function SortInline(opts)
   vim.api.nvim_buf_set_lines(0, start_pos[2] - 1, start_pos[2], false, { new_line })
 end
 
+-- Function to change working directory based on the current nvim-tree node
+function ChangeNvimTreeCwd()
+  local lib = require("nvim-tree.api")
+  local node = lib.tree.get_node_under_cursor()
+  if not node or not node.absolute_path then
+    print("No valid node found")
+    return
+  end
+
+  local new_cwd
+  if node.type == "directory" then
+    new_cwd = node.absolute_path
+  else
+    -- For a file, use its parent directory
+    new_cwd = vim.fn.fnamemodify(node.absolute_path, ":h")
+  end
+
+  if new_cwd and #new_cwd > 0 then
+    vim.cmd("cd " .. new_cwd)
+    print("Working directory changed to " .. new_cwd)
+  end
+end
+
 -- Create a command that accepts the "-d" flag for descending order
 vim.api.nvim_create_user_command("SortInline", SortInline, {
   nargs = "?",
   range = true,
   complete = function(_, _, _)
     return { "-d" }
+  end,
+})
+
+-- Create an autocommand to map the key only in nvim-tree buffers
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "NvimTree",
+  callback = function()
+    vim.api.nvim_buf_set_keymap(
+      0,
+      "n",
+      "<leader>cd",
+      ":lua ChangeNvimTreeCwd()<CR>",
+      { noremap = true, silent = true }
+    )
+  end,
+})
+
+vim.api.nvim_create_autocmd("CursorMovedI", {
+  callback = function()
+    require("luasnip").unlink_current()
   end,
 })

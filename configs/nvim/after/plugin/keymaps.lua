@@ -20,6 +20,7 @@ end
 local chad = api.nvim_create_augroup("Chad", {
   clear = false,
 })
+
 keymap("c", "<C-a>", "<Home>")
 -- Nvimtree
 keymap("n", "<C-n>", ":NvimTreeToggle<CR>")
@@ -96,6 +97,7 @@ keymap("n", "<F5>", dap.continue, { desc = "Debug: Start/Continue" })
 keymap("n", "<F1>", dap.step_into, { desc = "Debug: Step Into" })
 keymap("n", "<F2>", dap.step_over, { desc = "Debug: Step Over" })
 keymap("n", "<F3>", dap.step_out, { desc = "Debug: Step Out" })
+keymap("n", "<F4>", dap.terminate, { desc = "Debug: Terminate" })
 keymap("n", "<leader>b", dap.toggle_breakpoint, { desc = "Debug: Toggle Breakpoint" })
 keymap("n", "<leader>B", function()
   dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))

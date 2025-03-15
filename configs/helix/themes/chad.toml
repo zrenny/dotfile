@@ -1,0 +1,6 @@
+inherits = "dracula"
+"ui.background" ={}
+
+[ui.selection]
+fg = "foreground"      # Keep text color readable
+bg = "#333333"        # Change background color of selection
