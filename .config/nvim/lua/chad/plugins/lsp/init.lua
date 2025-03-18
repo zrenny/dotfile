@@ -1,4 +1,5 @@
 local servers = {
+  "bashls",
   "jsonls",
   "lua_ls",
   "rust_analyzer",
@@ -111,6 +112,7 @@ return {
           actions.eslint_d,
 
           -- formatting
+          formatting.shfmt,
           formatting.gofumpt,
           formatting.goimports_reviser,
           formatting.golines,

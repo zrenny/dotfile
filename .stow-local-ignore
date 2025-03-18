@@ -1,0 +1,10 @@
+\.git
+\.gitignore
+\.gitmodules
+
+
+^/README.*
+^/LICENSE.*
+
+install.sh
+
