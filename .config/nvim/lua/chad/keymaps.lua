@@ -138,8 +138,11 @@ keymap("v", ">", ">gv", opts)
 keymap("v", "<J>", ":m .+1<CR>==", opts)
 keymap("v", "<K>", ":m .-2<CR>==", opts)
 -- Better pasting
-keymap("v", "<Leader>p", [["_dP]], opts)
-keymap("x", "<Leader>p", [["_dP]], opts)
+keymap({ "v", "x" }, "<Leader>p", [["_dP]], opts)
+-- Delete and change without affecting registers
+keymap({ "n", "v" }, "<Leader>d", [["_d]], opts)
+keymap({ "n", "v" }, "<Leader>c", [["_c]], opts)
+keymap("n", "<Leader>x", [["_x]], opts)
 
 -- Visual Block --
 -- Move text up and down

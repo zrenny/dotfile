@@ -32,6 +32,11 @@ keymap("n", "<leader>ff", telescope_builtin.find_files)
 keymap("n", "<leader>gf", telescope_builtin.git_files)
 keymap("n", "<leader>gs", telescope_builtin.grep_string)
 keymap("n", "<leader>fb", telescope_builtin.buffers)
+keymap("n", "<leader>td", function()
+  telescope_builtin.diagnostics({
+    severity = vim.diagnostic.severity.WARN,
+  })
+end)
 
 -- Harpoon
 keymap("n", "<leader>a", function()
