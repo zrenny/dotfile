@@ -76,18 +76,18 @@ casks=(
 
 for tool in "${tools[@]}"; do
 	echo "Brew installing $tool"
-	brew install "$tool" &>/dev/null
+	brew install "$tool" 
 done
 
 chsh -s $(which zsh)
 
 for cask in "${casks[@]}"; do
 	echo "Brew install $cask"
-	brew install --cask "$cask" &>/dev/null
+	brew install --cask "$cask" 
 done
 
 echo "Installing rust"
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &>/dev/null
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
 source $HOME/.cargo/env
 
 rustup install nightly
@@ -122,7 +122,7 @@ go_tools=(
 
 for tool in "${go_tools[@]}"; do
 	echo "Go installing $tool"
-	go install ${tool}@latest &>/dev/null
+	go install ${tool}@latest 
 done
 
 rust_nightly_tools=(
@@ -131,7 +131,7 @@ rust_nightly_tools=(
 
 for tool in "${rust_nightly_tools[@]}"; do
 	echo "Rust nightly installing $tool"
-	rust +nightly component add "$tool" &>/dev/null
+	rust +nightly component add "$tool" 
 done
 
 rust_tools=(
@@ -144,9 +144,9 @@ rust_tools=(
 for tool in "${rust_tools[@]}"; do
 	echo "Rust installing $tool"
 	if [[ $tool = "rustowl" ]]; then
-		curl -L "https://github.com/cordx56/rustowl/releases/latest/download/install.sh" | sh &>/dev/null
+		curl -L "https://github.com/cordx56/rustowl/releases/latest/download/install.sh" | sh 
 	else
-		rustup component add "$tool" &>/dev/null
+		rustup component add "$tool" 
 	fi
 done
 
@@ -156,7 +156,7 @@ npm_tools=(
 
 for tool in "${npm_tools[@]}"; do
 	echo "NPM installing $tool"
-	npm install -g "$tool" &>/dev/null
+	npm install -g "$tool" 
 done
 
 mkdir -p "$HOME/.config/"
