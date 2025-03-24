@@ -58,7 +58,7 @@ tools=(
 	terraform
 	tree
 	tree-sitter
-	typo-cli
+	typos-cli
 	wget
 	koekeishiya/formulae/yabai
 	yamllint
