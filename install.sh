@@ -79,7 +79,10 @@ for tool in "${tools[@]}"; do
 	brew install "$tool" 
 done
 
-chsh -s $(which zsh)
+current_shell=$(basename "$SHELL")
+if [ "$current_shell" != "zsh" ]; then
+  chsh -s "$(which zsh)" || true
+fi
 
 for cask in "${casks[@]}"; do
 	echo "Brew install $cask"
