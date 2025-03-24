@@ -48,7 +48,7 @@ tools=(
 	scdoc
 	sd
 	shfmt
-	skhd
+	koekeishiya/formulae/skhd
 	sqlfluff
 	starship
 	stow
@@ -60,7 +60,7 @@ tools=(
 	tree-sitter
 	typo-cli
 	wget
-	yabai
+	koekeishiya/formulae/yabai
 	yamllint
 	zellij
 	zsh
