@@ -12,7 +12,7 @@ else
 fi
 
 tools=(
-	awscli
+	# awscli
 	bat
 	cffi
 	clang-format
