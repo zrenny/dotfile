@@ -67,6 +67,7 @@ tools=(
 	gcc
 	docker
 	colima
+ 	golangci-lint
 )
 
 casks=(
@@ -94,31 +95,25 @@ source $HOME/.cargo/env
 rustup install nightly
 
 go_tools=(
-	callgraph
-	dlv
-	fillswitch
-	ginkgo
-	go-enum
-	gofumpt
-	goimports
-	goimports-reviser
-	golangci-lint
-	golangci-lint-langserver
-	golines
-	gomodifytags
-	gomvp
-	gonew
-	gopls
-	gorename
-	gotests
-	gotestsum
-	govulncheck
-	iferr
-	impl
-	json-to-struct
-	mockgen
-	richgo
-	weed
+	golang.org/x/tools/cmd/callgraph
+	github.com/go-delve/delve/cmd/dlv
+	mvdan.cc/gofumpt
+	golang.org/x/tools/cmd/goimports
+	github.com/incu6us/goimports-reviser/v3
+	github.com/nametake/golangci-lint-langserver
+	github.com/segmentio/golines
+	github.com/fatih/gomodifytags
+	github.com/abenz1267/gomvp
+	golang.org/x/tools/cmd/gonew
+	golang.org/x/tools/gopls
+	golang.org/x/tools/cmd/gorename
+	github.com/cweill/gotests/...
+	gotest.tools/gotestsum
+	golang.org/x/vuln/cmd/govulncheck
+	github.com/motemen/go-iferr/cmd/goiferr
+	github.com/josharian/impl
+	go.uber.org/mock/mockgen
+	github.com/kyoh86/richgo
 )
 
 for tool in "${go_tools[@]}"; do
