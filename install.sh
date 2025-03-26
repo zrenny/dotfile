@@ -88,11 +88,11 @@ for cask in "${casks[@]}"; do
 	brew install --cask "$cask" 
 done
 
-echo "Installing rust"
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
-source $HOME/.cargo/env
+# echo "Installing rust"
+# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
+# source $HOME/.cargo/env
 
-rustup install nightly
+# rustup install nightly
 
 go_tools=(
 	golang.org/x/tools/cmd/callgraph
@@ -120,28 +120,28 @@ for tool in "${go_tools[@]}"; do
 	go install ${tool}@latest 
 done
 
-rust_nightly_tools=(
-	miri
-)
+# rust_nightly_tools=(
+# 	miri
+# )
 
-for tool in "${rust_nightly_tools[@]}"; do
-	rust +nightly component add "$tool" 
-done
+# for tool in "${rust_nightly_tools[@]}"; do
+#	rust +nightly component add "$tool" 
+# done
 
-rust_tools=(
-	clippy
-	rust-analyzer
-	rustfmt
-	rustowl
-)
+# rust_tools=(
+#	clippy
+#	rust-analyzer
+#	rustfmt
+#	rustowl
+# )
 
-for tool in "${rust_tools[@]}"; do
-	if [[ $tool = "rustowl" ]]; then
-		curl -L "https://github.com/cordx56/rustowl/releases/latest/download/install.sh" | sh 
-	else
-		rustup component add "$tool" 
-	fi
-done
+# for tool in "${rust_tools[@]}"; do
+#	if [[ $tool = "rustowl" ]]; then
+#		curl -L "https://github.com/cordx56/rustowl/releases/latest/download/install.sh" | sh 
+#	else
+#		rustup component add "$tool" 
+#	fi
+# done
 
 npm_tools=(
 	bash-language-server
