@@ -12,6 +12,8 @@ else
 fi
 
 tools=(
+	pgcli
+	taplo
 	awscli
 	bat
 	cffi
@@ -25,7 +27,6 @@ tools=(
 	eva
 	exiftool
 	fd
-	flake8
 	fzf
 	gh
 	go
@@ -45,6 +46,7 @@ tools=(
 	pycparser
 	python
 	ripgrep
+	ruff
 	scdoc
 	sd
 	shfmt
@@ -67,7 +69,7 @@ tools=(
 	gcc
 	docker
 	colima
- 	golangci-lint
+	golangci-lint
 )
 
 casks=(
@@ -76,20 +78,20 @@ casks=(
 )
 
 for tool in "${tools[@]}"; do
-	brew install "$tool" 
+	brew install "$tool"
 done
 
 current_shell=$(basename "$SHELL")
 if [ "$current_shell" != "zsh" ]; then
-  chsh -s "$(which zsh)" || true
+	chsh -s "$(which zsh)" || true
 fi
 
 for cask in "${casks[@]}"; do
-	brew install --cask "$cask" 
+	brew install --cask "$cask"
 done
 
 # echo "Installing rust"
-# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y 
+# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 # source $HOME/.cargo/env
 
 # rustup install nightly
@@ -117,7 +119,7 @@ go_tools=(
 )
 
 for tool in "${go_tools[@]}"; do
-	go install ${tool}@latest 
+	go install ${tool}@latest
 done
 
 # rust_nightly_tools=(
@@ -125,7 +127,7 @@ done
 # )
 
 # for tool in "${rust_nightly_tools[@]}"; do
-#	rust +nightly component add "$tool" 
+#	rust +nightly component add "$tool"
 # done
 
 # rust_tools=(
@@ -137,18 +139,19 @@ done
 
 # for tool in "${rust_tools[@]}"; do
 #	if [[ $tool = "rustowl" ]]; then
-#		curl -L "https://github.com/cordx56/rustowl/releases/latest/download/install.sh" | sh 
+#		curl -L "https://github.com/cordx56/rustowl/releases/latest/download/install.sh" | sh
 #	else
-#		rustup component add "$tool" 
+#		rustup component add "$tool"
 #	fi
 # done
 
 npm_tools=(
 	bash-language-server
+	vscode-langservers-extracted
 )
 
 for tool in "${npm_tools[@]}"; do
-	npm install -g "$tool" 
+	npm install -g "$tool"
 done
 
 mkdir -p "$HOME/.config/"

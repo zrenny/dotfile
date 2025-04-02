@@ -1,6 +1,3 @@
-# alacritty.toml
-
-live_config_reload = true
 
 [env]
 TERM   = "alacritty"
@@ -141,6 +138,11 @@ log_level          = "Warn"
 persistent_logging = false
 print_events       = false
 render_timer       = false
+
+[general]
+# alacritty.toml
+
+live_config_reload = true
 
 # vi mode keybindings
 # [[keyboard.bindings]]

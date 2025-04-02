@@ -125,4 +125,8 @@ export HELIX_RUNTIME=~/helix/runtime
 
 export Path=$PATH:$GOPATH/bin
 
+# Terminal meta keys
+bindkey "^[b" backward-word
+bindkey "^[f" forward-word
+
 source <(fzf --zsh)

@@ -1,156 +1,159 @@
 local servers = {
-  "bashls",
-  "jsonls",
-  "lua_ls",
-  "rust_analyzer",
-  "clangd",
-  "cmake",
-  "cssls",
-  "dockerls",
-  "docker_compose_language_service",
-  "eslint",
-  "graphql",
-  "html",
-  "helm_ls",
-  "ts_ls",
-  "kotlin_language_server",
-  "prismals",
-  "pyright",
-  "sqlls",
-  "taplo",
-  "terraformls",
-  "tflint",
-  "intelephense",
-  "yamlls",
-  "gopls",
+	"bashls",
+	"jsonls",
+	"lua_ls",
+	"rust_analyzer",
+	"clangd",
+	"cmake",
+	"cssls",
+	"dockerls",
+	"docker_compose_language_service",
+	"graphql",
+	"html",
+	"helm_ls",
+	"ts_ls",
+	"kotlin_language_server",
+	"prismals",
+	"pyright",
+	"sqlls",
+	"taplo",
+	"terraformls",
+	"tflint",
+	"intelephense",
+	"yamlls",
+	"gopls",
+	"tinymist",
 }
 
 return {
-  {
-    "cordx56/rustowl",
-    dependencies = { "neovim/nvim-lspconfig" },
-    config = function()
-      local lspconfig = require("lspconfig")
-      lspconfig.rustowl.setup({
-        trigger = {
-          hover = false,
-        },
-      })
-    end,
-  },
-  {
-    "williamboman/mason.nvim",
-    build = ":MasonUpdate",
-    lazy = false,
-    priority = 1000,
-    config = function()
-      require("mason").setup()
-    end,
-  },
-  {
-    "williamboman/mason-lspconfig.nvim",
-    lazy = false,
-    priority = 900,
-    config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = servers,
-        automatic_installation = true,
-      })
-    end,
-  },
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      {
-        "kevinhwang91/nvim-ufo",
-        dependencies = "kevinhwang91/promise-async",
-        config = function()
-          require("ufo").setup({
-            provider_selector = function()
-              return { "lsp", "indent" }
-            end,
-          })
-        end,
-      },
-    },
-    lazy = false,
-    priority = 900,
-    config = function()
-      local opts = {}
-      local config = require("lspconfig")
+	{
+		"cordx56/rustowl",
+		dependencies = { "neovim/nvim-lspconfig" },
+		config = function()
+			local lspconfig = require("lspconfig")
+			lspconfig.rustowl.setup({
+				trigger = {
+					hover = false,
+				},
+			})
+		end,
+	},
+	{
+		"williamboman/mason.nvim",
+		build = ":MasonUpdate",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("mason").setup()
+		end,
+	},
+	{
+		"williamboman/mason-lspconfig.nvim",
+		lazy = false,
+		priority = 900,
+		config = function()
+			require("mason-lspconfig").setup({
+				ensure_installed = servers,
+				automatic_installation = true,
+			})
+		end,
+	},
+	{
+		"neovim/nvim-lspconfig",
+		dependencies = {
+			{
+				"kevinhwang91/nvim-ufo",
+				dependencies = "kevinhwang91/promise-async",
+				config = function()
+					require("ufo").setup({
+						provider_selector = function()
+							return { "lsp", "indent" }
+						end,
+					})
+				end,
+			},
+		},
+		lazy = false,
+		priority = 900,
+		config = function()
+			local opts = {}
+			local config = require("lspconfig")
 
-      for _, ls in ipairs(servers) do
-        opts = {
-          on_attach = require("chad.plugins.lsp.handlers").on_attach,
-          capabilities = require("chad.plugins.lsp.handlers").capabilities,
-        }
+			for _, ls in ipairs(servers) do
+				opts = {
+					on_attach = require("chad.plugins.lsp.handlers").on_attach,
+					capabilities = require("chad.plugins.lsp.handlers").capabilities,
+				}
 
-        ls = vim.split(ls, "@")[1]
-        local ok, config_opts = pcall(require, "chad.plugins.lsp.settings." .. ls)
+				ls = vim.split(ls, "@")[1]
+				local ok, config_opts = pcall(require, "chad.plugins.lsp.settings." .. ls)
 
-        if ok then
-          opts = vim.tbl_deep_extend("force", config_opts, opts)
-        end
+				if ok then
+					opts = vim.tbl_deep_extend("force", config_opts, opts)
+				end
 
-        config[ls].setup(opts)
-      end
-    end,
-  },
-  {
-    "jose-elias-alvarez/null-ls.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      local null_ls = require("null-ls")
-      local formatting = null_ls.builtins.formatting
-      local diagnostics = null_ls.builtins.diagnostics
-      local actions = null_ls.builtins.code_actions
-      local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
+				config[ls].setup(opts)
+			end
 
-      null_ls.setup({
-        sources = {
-          --actions
-          actions.eslint_d,
+			config.tinymist.setup({})
+			config.taplo.setup({})
+			config.typos_lsp.setup({})
+			config.eslint.setup({})
+			config.ruff.setup({})
+		end,
+	},
+	{
+		"nvimtools/none-ls.nvim",
+		dependencies = { "nvim-lua/plenary.nvim", "nvimtools/none-ls-extras.nvim" },
+		config = function()
+			local null_ls = require("null-ls")
+			local formatting = null_ls.builtins.formatting
+			local diagnostics = null_ls.builtins.diagnostics
+			local actions = null_ls.builtins.code_actions
+			local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
 
-          -- formatting
-          formatting.shfmt,
-          formatting.gofumpt,
-          formatting.goimports_reviser,
-          formatting.golines,
-          formatting.clang_format,
-          formatting.prettier,
-          formatting.stylua,
-          formatting.terraform_fmt,
-          formatting.rustfmt,
-          formatting.stylelint,
-          formatting.tidy,
-          diagnostics.sqlfluff,
-          formatting.taplo,
+			null_ls.setup({
+				sources = {
+					--actions
 
-          -- diagnostics
-          diagnostics.clang_check,
-          diagnostics.typos,
-          diagnostics.eslint,
-          diagnostics.flake8,
-          diagnostics.cppcheck,
-          diagnostics.terraform_validate,
-          diagnostics.yamllint,
-        },
-        on_attach = function(client, bufnr)
-          if client.supports_method("textDocument/formatting") then
-            vim.api.nvim_clear_autocmds({
-              group = augroup,
-              buffer = bufnr,
-            })
-            vim.api.nvim_create_autocmd("BufWritePre", {
-              group = augroup,
-              buffer = bufnr,
-              callback = function()
-                vim.lsp.buf.format({ bufnr = bufnr })
-              end,
-            })
-          end
-        end,
-      })
-    end,
-  },
+					-- formatting
+					formatting.shfmt,
+					formatting.gofumpt,
+					formatting.goimports_reviser,
+					formatting.golines,
+					formatting.clang_format,
+					formatting.prettier,
+					formatting.stylua,
+					formatting.terraform_fmt,
+					-- formatting.rustfmt,
+					formatting.stylelint,
+					formatting.tidy,
+					diagnostics.sqlfluff,
+					-- formatting.taplo,
+
+					-- diagnostics
+					-- diagnostics.clang_check,
+					-- diagnostics.typos,
+					diagnostics.cppcheck,
+					diagnostics.terraform_validate,
+					diagnostics.yamllint,
+				},
+				on_attach = function(client, bufnr)
+					if client.supports_method("textDocument/formatting") then
+						vim.api.nvim_clear_autocmds({
+							group = augroup,
+							buffer = bufnr,
+						})
+						vim.api.nvim_create_autocmd("BufWritePre", {
+							group = augroup,
+							buffer = bufnr,
+							callback = function()
+								vim.lsp.buf.format({ bufnr = bufnr })
+							end,
+						})
+					end
+				end,
+			})
+		end,
+	},
 }
