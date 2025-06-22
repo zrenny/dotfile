@@ -102,7 +102,8 @@ source $ZSH/oh-my-zsh.sh
 eval $(/opt/homebrew/bin/brew shellenv)
 eval "$(starship init zsh)"
 
-export EDITOR="/usr/local/bin/nvim"
+export EDITOR="/opt/homebrew/bin/nvim"
+
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 export STARSHIP_CACHE="$HOME/.config/starship/cache"
 
@@ -130,3 +131,7 @@ bindkey "^[b" backward-word
 bindkey "^[f" forward-word
 
 source <(fzf --zsh)
+
+alias k="kubectl"
+# Work related configs
+[ -f ~/.config/work/.zshrc ] && source ~/.config/work/.zshrc 

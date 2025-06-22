@@ -160,3 +160,20 @@ vim.api.nvim_create_autocmd("CursorMovedI", {
     require("luasnip").unlink_current()
   end,
 })
+
+vim.api.nvim_create_augroup("yamlIndent", {})
+
+vim.api.nvim_create_autocmd("FileType", {
+
+  group = "yamlIndent",
+
+  pattern = { "yaml", "yml" },
+
+  callback = function()
+    vim.opt_local.expandtab = true
+
+    vim.opt_local.tabstop = 2
+
+    vim.opt_local.shiftwidth = 2
+  end,
+})
