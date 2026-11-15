@@ -69,7 +69,8 @@ local function on_attach(buf, client)
   map("n", "<leader>rn", lsp.rename, "Rename")
   -- No explicit lsp_format here, so per-filetype settings apply (Rust prefers
   -- rust-analyzer); everything else falls back to LSP via default_format_opts.
-  map("n", "<leader>f", function() require("conform").format({ async = true }) end, "Format buffer")
+  -- <leader>fm, not <leader>f: <leader>ff/fb/fs would make it pause 'timeoutlen'
+  map("n", "<leader>fm", function() require("conform").format({ async = true }) end, "Format buffer")
   map("n", "<leader>ih", function()
     vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf }), { bufnr = buf })
   end, "Toggle inlay hints")

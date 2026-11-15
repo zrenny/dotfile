@@ -12,7 +12,8 @@ return {
     opts = {},
     keys = {
       { "<leader>a", function() harpoon_list():add() end, desc = "Harpoon: add file" },
-      { "<leader>r", function() harpoon_list():remove() end, desc = "Harpoon: remove file" },
+      -- <leader>hr, not <leader>r: <leader>rn (rename) would make it pause
+      { "<leader>hr", function() harpoon_list():remove() end, desc = "Harpoon: remove file" },
       {
         "<leader>e",
         function() require("harpoon").ui:toggle_quick_menu(harpoon_list()) end,
@@ -44,7 +45,8 @@ return {
           vim.keymap.set("n", "<leader>p", function() vim.cmd.Git("push") end, o("Git: push"))
           vim.keymap.set("n", "<leader>P", function() vim.cmd.Git({ "pull", "--rebase" }) end, o("Git: pull --rebase"))
           -- set upstream if the branch wasn't set up with tracking
-          vim.keymap.set("n", "<leader>t", "<cmd>Git push -u origin<CR>", o("Git: push -u origin"))
+          -- nowait: fire immediately instead of pausing for the global <leader>td
+          vim.keymap.set("n", "<leader>t", "<cmd>Git push -u origin<CR>", vim.tbl_extend("force", o("Git: push -u origin"), { nowait = true }))
         end,
       })
     end,

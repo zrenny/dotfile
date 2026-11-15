@@ -36,17 +36,29 @@ map("n", "<C-u>", "<C-u>zz", "Half page up (centred)")
 map("n", "n", "nzzzv", "Next match (centred)")
 map("n", "N", "Nzzzv", "Previous match (centred)")
 
--- Quickfix
-map("n", "co", "<cmd>copen<CR>", "Quickfix: open")
-map("n", "cc", "<cmd>cclose<CR>", "Quickfix: close")
-map("n", "cj", "<cmd>cnext<CR>zz", "Quickfix: next")
-map("n", "ck", "<cmd>cprev<CR>zz", "Quickfix: previous")
-
--- Location list
-map("n", "lo", "<cmd>lopen<CR>", "Loclist: open")
-map("n", "lc", "<cmd>lclose<CR>", "Loclist: close")
-map("n", "lj", "<cmd>lnext<CR>zz", "Loclist: next")
-map("n", "lk", "<cmd>lprev<CR>zz", "Loclist: previous")
+-- Quickfix / location list
+-- (Previously co/cc/cj/ck and lo/lc/lj/lk: those hid Vim's `cc`/`c{motion}`
+-- and made every lone `l` wait 'timeoutlen' before moving.)
+-- ]q [q ]l [l are Neovim's defaults, redefined to keep the old re-centring;
+-- they accept a count (3]q).
+local function list_jump(cmd)
+  return function()
+    local ok, err = pcall(vim.cmd, vim.v.count1 .. cmd)
+    if ok then
+      vim.cmd("normal! zz")
+    else
+      vim.notify(err:match("E%d+:.*") or err, vim.log.levels.WARN) -- e.g. "E553: No more items"
+    end
+  end
+end
+map("n", "<leader>qo", "<cmd>copen<CR>", "Quickfix: open")
+map("n", "<leader>qc", "<cmd>cclose<CR>", "Quickfix: close")
+map("n", "]q", list_jump("cnext"), "Quickfix: next")
+map("n", "[q", list_jump("cprev"), "Quickfix: previous")
+map("n", "<leader>lo", "<cmd>lopen<CR>", "Loclist: open")
+map("n", "<leader>lc", "<cmd>lclose<CR>", "Loclist: close")
+map("n", "]l", list_jump("lnext"), "Loclist: next")
+map("n", "[l", list_jump("lprev"), "Loclist: previous")
 
 -- Resize
 map("n", "<A-Up>", "<cmd>resize +2<CR>", "Taller window")
@@ -58,7 +70,7 @@ map("n", "<A-Right>", "<cmd>vertical resize -2<CR>", "Narrower window")
 map("n", "<TAB>", "<cmd>bn<CR>", "Next buffer")
 map("n", "<S-TAB>", "<cmd>bp<CR>", "Previous buffer")
 map("n", "<leader>bd", "<cmd>bd<CR>", "Delete buffer")
-map("n", "<leader>bda", "<cmd>bd | bd<CR>", "Delete buffer twice")
+map("n", "<leader>bD", "<cmd>bd | bd<CR>", "Delete buffer twice") -- was <leader>bda (made <leader>bd pause)
 
 -- System clipboard
 map({ "n", "x" }, "<leader>y", [["+y]], "Yank to system clipboard")

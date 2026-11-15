@@ -37,7 +37,7 @@ return {
         html = { "prettier", "tidy" },
         xml = { "tidy_xml" },
         -- toml (Cargo.toml) is deliberately not auto-formatted, to avoid noisy
-        -- diffs in shared repos; <leader>f still formats it via taplo's LSP.
+        -- diffs in shared repos; <leader>fm still formats it via taplo's LSP.
       },
       formatters = {
         -- conform has no built-in tidy; these mirror none-ls's tidy source
@@ -61,7 +61,7 @@ return {
           return
         end
         -- Only auto-format filetypes listed above (like the old none-ls setup);
-        -- <leader>f still formats anything via LSP.
+        -- <leader>fm still formats anything via LSP.
         if not require("conform").formatters_by_ft[vim.bo[buf].filetype] then
           return
         end
