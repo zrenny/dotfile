@@ -17,6 +17,19 @@ return {
       { "<leader>l", group = "loclist / live grep / lens" },
       { "<leader>q", group = "quickfix" },
       { "<leader>s", group = "diagnostics → list" },
+      -- nvim-cmp hard-codes a generic description on its keys; label them here
+      {
+        mode = "i",
+        { "<C-Space>", desc = "Completion: open menu" },
+        { "<C-e>", desc = "Completion: close menu" },
+        { "<C-j>", desc = "Completion: next item" },
+        { "<C-k>", desc = "Completion: previous item" },
+        { "<CR>", desc = "Completion: confirm" },
+        { "<Tab>", desc = "Completion: next item / snippet jump" },
+        { "<S-Tab>", desc = "Completion: previous item / snippet jump back" },
+        { "<M-d>", desc = "Completion: scroll docs down" },
+        { "<M-u>", desc = "Completion: scroll docs up" },
+      },
     },
   },
 }

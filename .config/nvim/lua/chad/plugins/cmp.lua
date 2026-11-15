@@ -106,8 +106,12 @@ return {
         mapping = {
           ["<C-k>"] = cmp.mapping.select_prev_item(),
           ["<C-j>"] = cmp.mapping.select_next_item(),
-          ["<C-b>"] = cmp.mapping(cmp.mapping.scroll_docs(-1), { "i", "c" }),
-          ["<C-f>"] = cmp.mapping(cmp.mapping.scroll_docs(1), { "i", "c" }),
+          -- Docs scrolling on Alt-u / Alt-d. (Was <C-b>/<C-f>, but <C-b> is your
+          -- insert-mode "delete word before cursor", which then stopped working
+          -- whenever the docs popup was open. Alt-u/d are free in Neovim,
+          -- Alacritty (option_as_alt) and zellij.)
+          ["<M-u>"] = cmp.mapping(cmp.mapping.scroll_docs(-1), { "i", "c" }),
+          ["<M-d>"] = cmp.mapping(cmp.mapping.scroll_docs(1), { "i", "c" }),
           ["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
           ["<C-y>"] = cmp.config.disable, -- Specify `cmp.config.disable` if you want to remove the default `<C-y>` mapping.
           ["<C-e>"] = cmp.mapping({
