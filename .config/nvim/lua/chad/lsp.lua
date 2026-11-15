@@ -61,10 +61,11 @@ local function on_attach(buf, client)
   map("n", "gD", lsp.declaration, "Go to declaration")
   map("n", "gd", lsp.definition, "Go to definition")
   map("n", "gI", lsp.implementation, "Go to implementation")
-  -- nowait: since 0.11 Neovim also has global grn/gra/grr/gri maps, which
-  -- would otherwise make `gr` pause for 'timeoutlen' before firing
-  map("n", "gr", lsp.references, "References", { nowait = true })
   map("n", "gs", lsp.signature_help, "Signature help")
+  -- References and code actions use Neovim's built-in LSP keys (0.11+):
+  -- grr references, gra code action, grn rename, gri implementation,
+  -- grt type definition, grx run code lens. (No `gr` or <leader>ca here: `gr`
+  -- would block all of those, and <leader>ca clashed with <leader>c + a-objects.)
   map("n", "<leader>D", lsp.type_definition, "Type definition")
   map("n", "<leader>rn", lsp.rename, "Rename")
   -- No explicit lsp_format here, so per-filetype settings apply (Rust prefers
@@ -75,7 +76,7 @@ local function on_attach(buf, client)
     vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf }), { bufnr = buf })
   end, "Toggle inlay hints")
 
-  -- rust-analyzer gets richer versions of K and code actions via rustaceanvim.
+  -- rust-analyzer gets richer versions of K and gra via rustaceanvim.
   -- Keyed on filetype (not client) so a second client attaching later (rustowl,
   -- typos_lsp, ...) can't clobber them.
   if vim.bo[buf].filetype == "rust" then
@@ -91,10 +92,10 @@ local function on_attach(buf, client)
       end
     end
     map("n", "K", rust_or(lsp.hover, "hover", "actions"), "Rust hover actions")
-    map({ "n", "x" }, "<leader>ca", rust_or(lsp.code_action, "codeAction"), "Rust code action (grouped)")
+    -- Neovim's own gra can't show rust-analyzer's grouped code actions
+    map({ "n", "x" }, "gra", rust_or(lsp.code_action, "codeAction"), "Rust code action (grouped)")
   else
     map("n", "K", lsp.hover, "Hover")
-    map({ "n", "x" }, "<leader>ca", lsp.code_action, "Code action")
   end
 
   if client:supports_method("textDocument/inlayHint", buf) then

@@ -1,5 +1,5 @@
 -- Rust buffer settings + keymaps (all under <leader>R).
--- K and <leader>ca are upgraded to rustaceanvim's versions in lua/chad/lsp.lua.
+-- K and gra are upgraded to rustaceanvim's versions in lua/chad/lsp.lua.
 -- NOTE: don't set vim.g.rustaceanvim here; that's done in plugins/rust.lua.
 local buf = vim.api.nvim_get_current_buf()
 
