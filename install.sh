@@ -15,7 +15,6 @@ tools=(
 	pgcli
 	taplo
 	awscli
-	bat
 	cffi
 	clang-format
 	cppcheck
