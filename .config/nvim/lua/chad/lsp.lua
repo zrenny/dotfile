@@ -26,6 +26,13 @@ local function setup_diagnostics()
       header = "",
       prefix = "",
     },
+    -- Show the diagnostic float after [d / ]d (Neovim's built-in mappings).
+    -- (`float = true` in vim.diagnostic.jump() is deprecated in 0.12.)
+    jump = {
+      on_jump = function(_, bufnr)
+        vim.diagnostic.open_float({ bufnr = bufnr, scope = "cursor", focus = false })
+      end,
+    },
   })
 end
 
@@ -46,19 +53,23 @@ end
 ---@param buf integer
 ---@param client vim.lsp.Client
 local function on_attach(buf, client)
-  local function map(mode, lhs, rhs, desc)
-    vim.keymap.set(mode, lhs, rhs, { buffer = buf, silent = true, desc = desc })
+  local function map(mode, lhs, rhs, desc, extra)
+    vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", { buffer = buf, silent = true, desc = desc }, extra or {}))
   end
   local lsp = vim.lsp.buf
 
   map("n", "gD", lsp.declaration, "Go to declaration")
   map("n", "gd", lsp.definition, "Go to definition")
   map("n", "gI", lsp.implementation, "Go to implementation")
-  map("n", "gr", lsp.references, "References")
+  -- nowait: since 0.11 Neovim also has global grn/gra/grr/gri maps, which
+  -- would otherwise make `gr` pause for 'timeoutlen' before firing
+  map("n", "gr", lsp.references, "References", { nowait = true })
   map("n", "gs", lsp.signature_help, "Signature help")
   map("n", "<leader>D", lsp.type_definition, "Type definition")
   map("n", "<leader>rn", lsp.rename, "Rename")
-  map("n", "<leader>f", function() require("conform").format({ async = true, lsp_format = "fallback" }) end, "Format buffer")
+  -- No explicit lsp_format here, so per-filetype settings apply (Rust prefers
+  -- rust-analyzer); everything else falls back to LSP via default_format_opts.
+  map("n", "<leader>f", function() require("conform").format({ async = true }) end, "Format buffer")
   map("n", "<leader>ih", function()
     vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf }), { bufnr = buf })
   end, "Toggle inlay hints")
@@ -95,24 +106,32 @@ local function on_attach(buf, client)
     map("n", "<leader>cl", vim.lsp.codelens.run, "Run code lens")
   end
 
-  if client:supports_method("textDocument/documentHighlight", buf) then
+  local highlight = "textDocument/documentHighlight"
+  if client:supports_method(highlight, buf) then
     local hl_group = vim.api.nvim_create_augroup("chad_lsp_highlight_" .. buf, { clear = true })
     vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
       group = hl_group,
       buffer = buf,
-      callback = vim.lsp.buf.document_highlight,
+      callback = function() vim.lsp.buf.document_highlight() end,
     })
     vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
       group = hl_group,
       buffer = buf,
-      callback = vim.lsp.buf.clear_references,
+      callback = function() vim.lsp.util.buf_clear_references(buf) end,
     })
     vim.api.nvim_create_autocmd("LspDetach", {
       group = hl_group,
       buffer = buf,
-      callback = function()
-        vim.lsp.buf.clear_references()
-        vim.api.nvim_del_augroup_by_id(hl_group)
+      callback = function(ev)
+        -- Only tear down once no remaining client can highlight (e.g. typos_lsp
+        -- detaching must not switch it off while rust-analyzer is still attached)
+        for _, c in ipairs(vim.lsp.get_clients({ bufnr = buf, method = highlight })) do
+          if c.id ~= ev.data.client_id then
+            return
+          end
+        end
+        vim.lsp.util.buf_clear_references(buf)
+        pcall(vim.api.nvim_del_augroup_by_id, hl_group)
       end,
     })
   end
@@ -121,12 +140,7 @@ end
 function M.setup()
   setup_diagnostics()
 
-  -- Global diagnostic navigation (works with or without an LSP client)
-  local function jump(count)
-    return function() vim.diagnostic.jump({ count = count, float = true }) end
-  end
-  vim.keymap.set("n", "[d", jump(-1), { desc = "Previous diagnostic" })
-  vim.keymap.set("n", "]d", jump(1), { desc = "Next diagnostic" })
+  -- [d / ]d are Neovim defaults (they use the `jump` config above)
   vim.keymap.set("n", "<leader>of", vim.diagnostic.open_float, { desc = "Line diagnostics" })
   vim.keymap.set("n", "<leader>sl", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
   vim.keymap.set("n", "<leader>sc", vim.diagnostic.setqflist, { desc = "Diagnostics to quickfix" })

@@ -3,15 +3,49 @@
 -- Buffer keymaps for Rust live in after/ftplugin/rust.lua.
 
 -- Prefer the rustup-managed rust-analyzer so it always matches the project's
--- toolchain. Mason prepends its bin dir to $PATH, so a leftover mason
--- rust-analyzer would otherwise shadow it.
-local function rust_analyzer_cmd()
-  local cargo_home = vim.env.CARGO_HOME or vim.fs.joinpath(vim.env.HOME, ".cargo")
-  local rustup_ra = vim.fs.joinpath(cargo_home, "bin", "rust-analyzer")
-  if vim.fn.executable(rustup_ra) == 1 then
-    return { rustup_ra }
+-- toolchain (the rustup proxy also honours rust-toolchain.toml). Mason
+-- prepends its bin dir to $PATH, so a leftover mason rust-analyzer would
+-- otherwise shadow it.
+local ra_logfile = vim.fn.tempname() .. "-rust-analyzer.log" -- :RustLsp logFile
+local ra_bin -- resolved once per session
+
+-- First rust-analyzer on $PATH that isn't in `skip_dir` (brew, mason, ...)
+local function other_rust_analyzer(skip_dir)
+  for _, dir in ipairs(vim.split(vim.env.PATH or "", ":", { trimempty = true })) do
+    local candidate = vim.fs.joinpath(dir, "rust-analyzer")
+    if vim.fs.normalize(dir) ~= skip_dir and vim.fn.executable(candidate) == 1 then
+      return candidate
+    end
   end
-  return { "rust-analyzer" }
+end
+
+local function rust_analyzer_cmd()
+  if not ra_bin then
+    local bin = vim.fs.normalize(vim.fs.joinpath(vim.env.CARGO_HOME or vim.fs.joinpath(vim.env.HOME, ".cargo"), "bin"))
+    local proxy = vim.fs.joinpath(bin, "rust-analyzer")
+    if vim.fn.executable(proxy) == 1 then
+      -- The rustup proxy exists even when the component isn't installed
+      local ok, res = pcall(function()
+        return vim.system({ vim.fs.joinpath(bin, "rustup"), "which", "rust-analyzer" }):wait()
+      end)
+      if ok and res.code == 0 then
+        ra_bin = proxy
+      else
+        ra_bin = other_rust_analyzer(bin)
+        vim.notify(
+          "rust-analyzer isn't installed for your rustup toolchain: run `rustup component add rust-analyzer`"
+            .. (ra_bin and ("\nUsing " .. ra_bin .. " for now.") or ""),
+          vim.log.levels.WARN
+        )
+      end
+    else
+      ra_bin = other_rust_analyzer(nil)
+    end
+    -- Nothing usable: a non-executable name makes rustaceanvim skip attaching
+    -- instead of launching a server that immediately crashes.
+    ra_bin = ra_bin or "rust-analyzer (not installed)"
+  end
+  return { ra_bin, "--log-file", ra_logfile }
 end
 
 return {
@@ -29,6 +63,7 @@ return {
         },
         server = {
           cmd = rust_analyzer_cmd,
+          logfile = ra_logfile,
           default_settings = {
             ["rust-analyzer"] = {
               cargo = {

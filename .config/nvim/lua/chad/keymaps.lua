@@ -7,7 +7,7 @@ end
 local function close_floating()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     if vim.api.nvim_win_get_config(win).relative ~= "" then
-      vim.api.nvim_win_close(win, false)
+      pcall(vim.api.nvim_win_close, win, false) -- some floats refuse to close
     end
   end
 end

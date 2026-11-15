@@ -136,9 +136,10 @@ done
 
 rustup component add clippy rust-analyzer rustfmt rust-src
 
-# RustOwl (ownership/lifetime visualiser; toggled with <leader>Rb in nvim)
+# RustOwl (ownership/lifetime visualiser; toggled with <leader>Rb in nvim).
+# Prebuilt binary via the project's installer (`cargo install` builds from source)
 if ! command -v rustowl &>/dev/null; then
-	cargo install --locked rustowl
+	curl -L https://raw.githubusercontent.com/cordx56/rustowl/refs/heads/main/scripts/installer | sh
 fi
 
 npm_tools=(

@@ -4,6 +4,9 @@
 local buf = vim.api.nvim_get_current_buf()
 
 vim.opt_local.colorcolumn = "100" -- rustfmt's default max_width
+-- The global config adds `-` to 'iskeyword'; in Rust that makes `w`, `ciw`
+-- and `*` treat `len-1` as one word.
+vim.opt_local.iskeyword:remove("-")
 
 local function map(lhs, rhs, desc, mode)
   vim.keymap.set(mode or "n", lhs, rhs, { buffer = buf, silent = true, desc = "Rust: " .. desc })

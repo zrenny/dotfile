@@ -36,7 +36,10 @@ return {
           if not lang or not vim.treesitter.language.add(lang) then
             return -- no parser installed for this filetype
           end
-          vim.treesitter.start(ev.buf, lang)
+          -- pcall: a parser installed by something else may lack highlight queries
+          if not pcall(vim.treesitter.start, ev.buf, lang) then
+            return
+          end
           if vim.treesitter.query.get(lang, "indents") then
             vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
           end

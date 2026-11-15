@@ -35,6 +35,16 @@ return {
     { "<C-n>", "<cmd>NvimTreeToggle<CR>", desc = "File tree" },
     { "<leader>nf", "<cmd>NvimTreeFocus<CR>", desc = "Focus file tree" },
   },
+  init = function()
+    -- netrw is disabled, so `nvim .` / `nvim some/dir` needs nvim-tree loaded
+    -- at startup to take over the directory buffer
+    if vim.fn.argc(-1) == 1 then
+      local stat = vim.uv.fs_stat(vim.fn.argv(0))
+      if stat and stat.type == "directory" then
+        require("nvim-tree")
+      end
+    end
+  end,
   dependencies = {
     "nvim-tree/nvim-web-devicons",
   },

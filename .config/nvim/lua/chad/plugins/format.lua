@@ -14,14 +14,17 @@ return {
         c = { "clang-format" },
         cpp = { "clang-format" },
         lua = { "stylua" },
+        -- (not zsh: shfmt doesn't understand zsh syntax and would mangle .zshrc)
         sh = { "shfmt" },
         bash = { "shfmt" },
-        zsh = { "shfmt" },
+        bats = { "shfmt" },
         terraform = { "terraform_fmt" },
         tf = { "terraform_fmt" },
+        ["terraform-vars"] = { "terraform_fmt" },
         css = { "prettier", "stylelint" },
         scss = { "prettier", "stylelint" },
         less = { "prettier", "stylelint" },
+        sass = { "stylelint" },
         javascript = { "prettier" },
         javascriptreact = { "prettier" },
         typescript = { "prettier" },
@@ -31,15 +34,23 @@ return {
         yaml = { "prettier" },
         markdown = { "prettier" },
         graphql = { "prettier" },
-        html = { "prettier" },
-        xml = { "tidy" },
-        toml = { "taplo" },
+        html = { "prettier", "tidy" },
+        xml = { "tidy_xml" },
+        -- toml (Cargo.toml) is deliberately not auto-formatted, to avoid noisy
+        -- diffs in shared repos; <leader>f still formats it via taplo's LSP.
       },
       formatters = {
-        -- conform has no built-in tidy; same args none-ls used
+        -- conform has no built-in tidy; these mirror none-ls's tidy source
+        -- (plus -xml for XML, which none-ls omitted so tidy treated it as HTML)
         tidy = {
           command = "tidy",
-          args = { "--tidy-mark", "no", "-quiet", "-indent", "-wrap", "-", "-xml" },
+          args = { "--tidy-mark", "no", "-quiet", "-indent", "-wrap", "-" },
+          stdin = true,
+          exit_codes = { 0, 1 }, -- 1 = warnings only
+        },
+        tidy_xml = {
+          command = "tidy",
+          args = { "--tidy-mark", "no", "-quiet", "-indent", "-xml", "-wrap", "-" },
           stdin = true,
           exit_codes = { 0, 1 },
         },
