@@ -4,6 +4,7 @@ return {
     "nvim-lua/plenary.nvim",
     {
       "ahmedkhalf/project.nvim",
+      lazy = false, -- auto-cd to the project root from startup, not just after telescope loads
       config = function()
         require("project_nvim").setup({
           -- Manual mode doesn't automatically change your root directory, so you have
@@ -18,7 +19,7 @@ return {
 
           -- All the patterns used to detect root dir, when **"pattern"** is in
           -- detection_methods
-          patterns = { ".git", "_darcs", ".hg", ".bzr", ".svn", "Makefile", "package.json" },
+          patterns = { ".git", "_darcs", ".hg", ".bzr", ".svn", "Cargo.toml", "go.mod", "Makefile", "package.json" },
 
           -- Table of lsp clients to ignore by name
           -- eg: { "efm", ... }
@@ -48,8 +49,21 @@ return {
       end,
     },
   },
-  event = "VimEnter",
-  priority = 1000,
+  cmd = "Telescope",
+  keys = {
+    { "<leader>lg", function() require("telescope.builtin").live_grep() end, desc = "Live grep" },
+    { "<leader>ff", function() require("telescope.builtin").find_files() end, desc = "Find files" },
+    { "<leader>gf", function() require("telescope.builtin").git_files() end, desc = "Git files" },
+    { "<leader>gs", function() require("telescope.builtin").grep_string() end, desc = "Grep word under cursor" },
+    { "<leader>fb", function() require("telescope.builtin").buffers() end, desc = "Buffers" },
+    { "<leader>fs", function() require("telescope.builtin").lsp_document_symbols() end, desc = "Document symbols" },
+    { "<leader>fS", function() require("telescope.builtin").lsp_dynamic_workspace_symbols() end, desc = "Workspace symbols" },
+    {
+      "<leader>td",
+      function() require("telescope.builtin").diagnostics({ severity = vim.diagnostic.severity.WARN }) end,
+      desc = "Diagnostics (warnings)",
+    },
+  },
   config = function()
     local telescope = require("telescope")
     local actions = require("telescope.actions")
@@ -191,8 +205,7 @@ return {
           end,
         },
       },
-
-      telescope.load_extension("projects"),
     })
+    telescope.load_extension("projects")
   end,
 }

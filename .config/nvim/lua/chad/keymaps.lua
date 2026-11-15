@@ -1,161 +1,104 @@
-local opts = { noremap = true, silent = true }
+-- Core (plugin-free) keymaps. Plugin keymaps live in each plugin spec's `keys`,
+-- LSP keymaps in lua/chad/lsp.lua, Rust keymaps in after/ftplugin/rust.lua.
+--
+-- Visual-mode maps use "x", not "v": "v" also covers *select* mode, which is
+-- what snippet placeholders use, so e.g. a "v" map on H would turn typing
+-- "Hello" over a placeholder into "^ello".
+local function map(mode, lhs, rhs, desc, opts)
+  vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", { silent = true, desc = desc }, opts or {}))
+end
 
--- Shorten function name
-local keymap = vim.keymap.set
 local function close_floating()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local config = vim.api.nvim_win_get_config(win)
-    if config.relative ~= "" then
-      vim.api.nvim_win_close(win, false)
+    if vim.api.nvim_win_get_config(win).relative ~= "" then
+      pcall(vim.api.nvim_win_close, win, false) -- some floats refuse to close
     end
   end
 end
---Remap space as leader key
-keymap("", "<Space>", "<Nop>", opts)
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
 
--- Modes
---   normal_mode = "n",
---   insert_mode = "i",
---   visual_mode = "v",
---   visual_block_mode = "x",
---   term_mode = "t",
---   command_mode = "c",
-
-keymap("c", "<C-a>", "<Home>")
-
-function RemoveCurrentQuickfixEntry()
-  local qflist = vim.fn.getqflist()
-  local lnum = vim.fn.line(".") - 1
-  table.remove(qflist, lnum + 1)
-  vim.fn.setqflist(qflist)
-  vim.cmd("copen")
-end
-
--- Set keymap only inside the Quickfix window
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "qf",
-  callback = function()
-    vim.api.nvim_buf_set_keymap(
-      0,
-      "n",
-      "<leader>dc",
-      ":lua RemoveCurrentQuickfixEntry()<CR>",
-      { noremap = true, silent = true }
-    )
-  end,
-})
-
-function RemoveCurrentLocListEntry()
-  local loclist = vim.fn.getloclist(0)
-  local lnum = vim.fn.line(".") - 1
-  table.remove(loclist, lnum + 1)
-  vim.fn.setloclist(0, loclist)
-  vim.cmd("lopen")
-end
-
--- Set keymap only inside the Location list window
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "qf",
-  callback = function()
-    vim.api.nvim_buf_set_keymap(
-      0,
-      "n",
-      "<leader>dl",
-      ":lua RemoveCurrentLocListEntry()<CR>",
-      { noremap = true, silent = true }
-    )
-  end,
-})
+map({ "n", "x" }, "<Space>", "<Nop>", "Leader key")
+map("c", "<C-a>", "<Home>", "Cmdline: go to start", { silent = false })
 
 -- Normal --
-keymap("n", "L", "$", opts)
-keymap("n", "H", "^", opts)
-keymap("n", "<ESC>", close_floating, opts)
--- Better window navigation
-keymap("n", "<C-h>", "<C-w>h", opts)
-keymap("n", "<C-j>", "<C-w>j", opts)
-keymap("n", "<C-k>", "<C-w>k", opts)
-keymap("n", "<C-l>", "<C-w>l", opts)
+map("n", "L", "$", "End of line")
+map("n", "H", "^", "First non-blank of line")
+map("n", "<ESC>", close_floating, "Close floating windows")
 
-keymap("n", "J", "mzJ`z", opts)
-keymap("n", "<C-d>", "<C-d>zz", opts)
-keymap("n", "<C-u>", "<C-u>zz", opts)
-keymap("n", "n", "nzzzv", opts)
-keymap("n", "N", "Nzzzv", opts)
+-- Window navigation
+map("n", "<C-h>", "<C-w>h", "Window left")
+map("n", "<C-j>", "<C-w>j", "Window down")
+map("n", "<C-k>", "<C-w>k", "Window up")
+map("n", "<C-l>", "<C-w>l", "Window right")
 
--- Quick fix
-keymap("n", "co", "<cmd>copen<CR>", opts)
-keymap("n", "cc", "<cmd>cclose<CR>", opts)
-keymap("n", "cj", "<cmd>cnext<CR>zz", opts)
-keymap("n", "ck", "<cmd>cprev<CR>zz", opts)
+map("n", "J", "mzJ`z", "Join lines (keep cursor)")
+map("n", "<C-d>", "<C-d>zz", "Half page down (centred)")
+map("n", "<C-u>", "<C-u>zz", "Half page up (centred)")
+map("n", "n", "nzzzv", "Next match (centred)")
+map("n", "N", "Nzzzv", "Previous match (centred)")
 
--- Local list
-keymap("n", "lo", "<cmd>lopen<CR>", opts)
-keymap("n", "lc", "<cmd>lclose<CR>", opts)
-keymap("n", "lj", "<cmd>lnext<CR>zz", opts)
-keymap("n", "lk", "<cmd>lprev<CR>zz", opts)
+-- Quickfix / location list
+-- (Previously co/cc/cj/ck and lo/lc/lj/lk: those hid Vim's `cc`/`c{motion}`
+-- and made every lone `l` wait 'timeoutlen' before moving.)
+-- ]q [q ]l [l are Neovim's defaults, redefined to keep the old re-centring;
+-- they accept a count (3]q).
+local function list_jump(cmd)
+  return function()
+    local ok, err = pcall(vim.cmd, vim.v.count1 .. cmd)
+    if ok then
+      vim.cmd("normal! zz")
+    else
+      vim.notify(err:match("E%d+:.*") or err, vim.log.levels.WARN) -- e.g. "E553: No more items"
+    end
+  end
+end
+map("n", "<leader>qo", "<cmd>copen<CR>", "Quickfix: open")
+map("n", "<leader>qc", "<cmd>cclose<CR>", "Quickfix: close")
+map("n", "]q", list_jump("cnext"), "Quickfix: next")
+map("n", "[q", list_jump("cprev"), "Quickfix: previous")
+map("n", "<leader>lo", "<cmd>lopen<CR>", "Loclist: open")
+map("n", "<leader>lc", "<cmd>lclose<CR>", "Loclist: close")
+map("n", "]l", list_jump("lnext"), "Loclist: next")
+map("n", "[l", list_jump("lprev"), "Loclist: previous")
 
--- Resize with arrows
-keymap("n", "<A-Up>", ":resize +2<CR>", opts)
-keymap("n", "<A-Down>", ":resize -2<CR>", opts)
-keymap("n", "<A-Left>", ":vertical resize +2<CR>", opts)
-keymap("n", "<A-Right>", ":vertical resize -2<CR>", opts)
+-- Resize
+map("n", "<A-Up>", "<cmd>resize +2<CR>", "Taller window")
+map("n", "<A-Down>", "<cmd>resize -2<CR>", "Shorter window")
+map("n", "<A-Left>", "<cmd>vertical resize +2<CR>", "Wider window")
+map("n", "<A-Right>", "<cmd>vertical resize -2<CR>", "Narrower window")
 
-keymap("n", "<TAB>", ":bn<CR>", opts)
-keymap("n", "<S-TAB>", ":bp<CR>", opts)
-keymap("n", "<leader>bd", ":bd<CR>", opts)
-keymap("n", "<leader>bda", ":bd | :bd<CR>", opts)
+-- Buffers
+map("n", "<TAB>", "<cmd>bn<CR>", "Next buffer")
+map("n", "<S-TAB>", "<cmd>bp<CR>", "Previous buffer")
+map("n", "<leader>bd", "<cmd>bd<CR>", "Delete buffer")
+map("n", "<leader>bD", "<cmd>bd | bd<CR>", "Delete buffer twice") -- was <leader>bda (made <leader>bd pause)
 
--- Pasting to system clipboard
-keymap({ "n", "v" }, "<leader>y", [["+y]], opts)
-keymap("n", "<leader>Y", [["+Y]], opts)
+-- System clipboard
+map({ "n", "x" }, "<leader>y", [["+y]], "Yank to system clipboard")
+map("n", "<leader>Y", [["+Y]], "Yank line to system clipboard")
 
--- Navigate buffers
--- keymap("n", "<S-l>", ":bnext<CR>", opts)
--- keymap("n", "<S-h>", ":bprevious<CR>", opts)
-
--- Move text up and down
--- keymap("n", "<A-j>", ":m .+1<CR>==", opts)
--- keymap("n", "<A-k>", ":m .-2<CR>==", opts)
-
--- Insert -- Press jk fast
-keymap("i", "<C-b>", "<C-o>db", opts)
-keymap("i", "<C-w>", "<C-o>dw", opts)
-keymap("i", "<C-u>", "<C-o>d^", opts)
-keymap("i", "<C-d>", "<C-o>D", opts)
-keymap("i", "<C-h>", "<C-o><<", opts)
-keymap("i", "<C-l>", "<C-o>>>", opts)
-keymap("i", "jk", "<ESC>", opts)
+-- Insert --
+map("i", "<C-b>", "<C-o>db", "Delete word before cursor")
+map("i", "<C-w>", "<C-o>dw", "Delete word after cursor")
+map("i", "<C-u>", "<C-o>d^", "Delete to start of line")
+map("i", "<C-d>", "<C-o>D", "Delete to end of line")
+map("i", "<C-h>", "<C-o><<", "Dedent line")
+map("i", "<C-l>", "<C-o>>>", "Indent line")
+map("i", "jk", "<ESC>", "Exit insert mode")
 
 -- Visual --
--- Stay in indent mode
-keymap("v", "<", "<gv", opts)
-keymap("v", ">", ">gv", opts)
-
--- Move text up and down
-keymap("v", "<J>", ":m .+1<CR>==", opts)
-keymap("v", "<K>", ":m .-2<CR>==", opts)
--- Better pasting
-keymap({ "v", "x" }, "<Leader>p", [["_dP]], opts)
--- Delete and change without affecting registers
-keymap({ "n", "v" }, "<Leader>d", [["_d]], opts)
-keymap({ "n", "v" }, "<Leader>c", [["_c]], opts)
-keymap("n", "<Leader>x", [["_x]], opts)
-
--- Visual Block --
--- Move text up and down
-keymap("x", "J", ":move '>+1<CR>gv-gv", opts)
-keymap("x", "K", ":move '<-2<CR>gv-gv", opts)
--- keymap("x", "<A-j>", ":move '>+1<CR>gv-gv", opts)
--- keymap("x", "<A-k>", ":move '<-2<CR>gv-gv", opts)
-
-keymap({ "v", "x" }, "H", "^", opts)
-keymap({ "v", "x" }, "L", "$", opts)
+map("x", "<", "<gv", "Dedent (keep selection)")
+map("x", ">", ">gv", "Indent (keep selection)")
+map("x", "<leader>p", [["_dP]], "Paste without yanking selection")
+map({ "n", "x" }, "<leader>d", [["_d]], "Delete without yanking")
+map({ "n", "x" }, "<leader>c", [["_c]], "Change without yanking")
+map("n", "<leader>x", [["_x]], "Delete char without yanking")
+map("x", "J", ":move '>+1<CR>gv-gv", "Move selection down")
+map("x", "K", ":move '<-2<CR>gv-gv", "Move selection up")
+map("x", "H", "^", "First non-blank of line")
+map("x", "L", "$", "End of line")
 
 -- Terminal --
-keymap("t", "<A-Up>", "<cmd>resize +2<CR>", opts)
-keymap("t", "<A-Down>", "<cmd>resize -2<CR>", opts)
-keymap("t", "<A-Left>", "<cmd>vertical resize -2<CR>", opts)
-keymap("t", "<A-Right>", "<cmd>vertical resize +2<CR>", opts)
+map("t", "<A-Up>", "<cmd>resize +2<CR>", "Taller window")
+map("t", "<A-Down>", "<cmd>resize -2<CR>", "Shorter window")
+map("t", "<A-Left>", "<cmd>vertical resize -2<CR>", "Narrower window")
+map("t", "<A-Right>", "<cmd>vertical resize +2<CR>", "Wider window")

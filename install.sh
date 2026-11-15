@@ -59,7 +59,7 @@ tools=(
 	telnet
 	terraform
 	tree
-	tree-sitter
+	tree-sitter-cli # nvim-treesitter needs the CLI; the plain `tree-sitter` formula is now library-only
 	typos-cli
 	wget
 	koekeishiya/formulae/yabai
@@ -90,9 +90,13 @@ for cask in "${casks[@]}"; do
 	brew install --cask "$cask"
 done
 
-# echo "Installing rust"
-# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-# source $HOME/.cargo/env
+# Rust (rustup-managed so rust-analyzer always matches the toolchain;
+# the nvim config prefers ~/.cargo/bin/rust-analyzer over mason's)
+if ! command -v rustup &>/dev/null; then
+	echo "Installing rust"
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+	source "$HOME/.cargo/env"
+fi
 
 # rustup install nightly
 
@@ -130,20 +134,13 @@ done
 #	rust +nightly component add "$tool"
 # done
 
-# rust_tools=(
-#	clippy
-#	rust-analyzer
-#	rustfmt
-#	rustowl
-# )
+rustup component add clippy rust-analyzer rustfmt rust-src
 
-# for tool in "${rust_tools[@]}"; do
-#	if [[ $tool = "rustowl" ]]; then
-#		curl -L "https://github.com/cordx56/rustowl/releases/latest/download/install.sh" | sh
-#	else
-#		rustup component add "$tool"
-#	fi
-# done
+# RustOwl (ownership/lifetime visualiser; toggled with <leader>Rb in nvim).
+# Prebuilt binary via the project's installer (`cargo install` builds from source)
+if ! command -v rustowl &>/dev/null; then
+	curl -L https://raw.githubusercontent.com/cordx56/rustowl/refs/heads/main/scripts/installer | sh
+fi
 
 npm_tools=(
 	bash-language-server
