@@ -1,8 +1,3 @@
-local check_backspace = function()
-  local col = vim.fn.col(".") - 1
-  return col == 0 or vim.fn.getline("."):sub(col, col):match("%s")
-end
-
 local kind_icons = {
   Text = "󰊄",
   Method = "m",
@@ -49,45 +44,20 @@ return {
         "L3MON4D3/LuaSnip",
         dependencies = "rafamadriz/friendly-snippets", -- a bunch of snippets to
         opts = {
-          history = true,
-          uregion_check_events = "InsertEnter",
+          -- (these were previously misspelt as `uregion_check_events` /
+          -- `pdateevents`, so LuaSnip silently ignored them)
+          region_check_events = "InsertEnter",
           delete_check_events = "TextChanged,InsertLeave",
-          pdateevents = "TextChanged,TextChangedI",
+          update_events = "TextChanged,TextChangedI",
         },
         version = "2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
         build = "make install_jsregexp",
         config = function(_, opts)
           require("luasnip").config.set_config(opts)
-
-          -- vscode format
+          -- friendly-snippets (includes Rust) + any snippets/ dirs in the config
           require("luasnip.loaders.from_vscode").lazy_load()
-          require("luasnip.loaders.from_vscode").lazy_load({ paths = vim.g.vscode_snippets_path or "" })
-
-          -- snipmate format
-          require("luasnip.loaders.from_snipmate").load()
-          require("luasnip.loaders.from_snipmate").lazy_load({ paths = vim.g.snipmate_snippets_path or "" })
-
-          -- lua format
-          require("luasnip.loaders.from_lua").load()
-          require("luasnip.loaders.from_lua").lazy_load({ paths = vim.g.lua_snippets_path or "" })
-
-          vim.api.nvim_create_autocmd("InsertLeave", {
-            callback = function()
-              if
-                  require("luasnip").session.current_nodes[vim.api.nvim_get_current_buf()]
-                  and not require("luasnip").session.jump_active
-              then
-                require("luasnip").unlink_current()
-              end
-            end,
-          })
-        end,
-      },
-      {
-        "saecki/crates.nvim",
-        dependencies = { "nvim-lua/plenary.nvim" },
-        config = function()
-          require("crates").setup()
+          require("luasnip.loaders.from_snipmate").lazy_load()
+          require("luasnip.loaders.from_lua").lazy_load()
         end,
       },
       {
@@ -154,8 +124,6 @@ return {
               luasnip.expand()
             elseif luasnip.expand_or_jumpable() then
               luasnip.expand_or_jump()
-            elseif check_backspace() then
-              fallback()
             else
               fallback()
             end
@@ -183,12 +151,11 @@ return {
             vim_item.kind = string.format("%s", kind_icons[vim_item.kind])
             -- vim_item.kind = string.format('%s %s', kind_icons[vim_item.kind], vim_item.kind) -- This concatenates the icons with the name of the item kind
             vim_item.menu = ({
-              nvim_lsp = "[LSP]",
+              nvim_lsp = entry.source.source.client and ("[" .. entry.source.source.client.name .. "]") or "[LSP]",
               nvim_lua = "[NVIM_LUA]",
               luasnip = "[Snippet]",
               buffer = "[Buffer]",
               path = "[Path]",
-              crates = "[Crates]",
             })[entry.source.name]
             return vim_item
           end,
@@ -199,7 +166,6 @@ return {
           { name = "luasnip" },
           { name = "buffer" },
           { name = "path" },
-          { name = "crates" },
         },
         confirm_opts = {
           behavior = cmp.ConfirmBehavior.Replace,
@@ -210,7 +176,6 @@ return {
         },
         experimental = {
           ghost_text = true,
-          native_menu = false,
         },
       })
       vim.api.nvim_create_autocmd("ModeChanged", {

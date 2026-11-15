@@ -14,12 +14,27 @@ local function on_attach(bufnr)
 
   keymap("n", "h", api.node.open.horizontal, opts)
   keymap("n", "v", api.node.open.vertical, opts)
+
+  -- cd into the node under the cursor (its parent dir for files)
+  keymap("n", "<leader>cd", function()
+    local node = api.tree.get_node_under_cursor()
+    if not node or not node.absolute_path then
+      return
+    end
+    local dir = node.type == "directory" and node.absolute_path or vim.fs.dirname(node.absolute_path)
+    vim.cmd.cd(dir)
+    vim.notify("cwd: " .. dir)
+  end, opts)
 end
 
 return {
   "nvim-tree/nvim-tree.lua",
   version = "*",
-  cmd = "NvimTreeToggle",
+  cmd = { "NvimTreeToggle", "NvimTreeFocus" },
+  keys = {
+    { "<C-n>", "<cmd>NvimTreeToggle<CR>", desc = "File tree" },
+    { "<leader>nf", "<cmd>NvimTreeFocus<CR>", desc = "Focus file tree" },
+  },
   dependencies = {
     "nvim-tree/nvim-web-devicons",
   },
@@ -30,7 +45,6 @@ return {
       hijack_netrw = true,
       open_on_tab = false,
       hijack_cursor = false,
-      update_cwd = true,
       hijack_directories = {
         enable = true,
         auto_open = true,
@@ -92,8 +106,7 @@ return {
       update_focused_file = {
         enable = true,
         update_root = true,
-        update_cwd = true,
-      },
+        },
     })
   end,
 }
