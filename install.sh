@@ -156,6 +156,6 @@ mkdir -p "$HOME/.config/"
 wd="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 cd "$wd"
-stow .
+stow -R . # restow: also removes links to files deleted from the repo
 
 echo "✅ Installation complete!"
