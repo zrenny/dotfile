@@ -14,7 +14,8 @@ return {
       { "<leader>f", group = "find / format" },
       { "<leader>g", group = "git / grep" },
       { "<leader>h", group = "harpoon" },
-      { "<leader>l", group = "loclist / live grep / lens" },
+      { "<leader>l", group = "loclist / live grep" },
+      { "gr", group = "LSP (Neovim defaults)" },
       { "<leader>q", group = "quickfix" },
       { "<leader>s", group = "diagnostics → list" },
       -- nvim-cmp hard-codes a generic description on its keys; label them here

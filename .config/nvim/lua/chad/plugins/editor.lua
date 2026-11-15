@@ -12,7 +12,6 @@ return {
     opts = {},
     keys = {
       { "<leader>a", function() harpoon_list():add() end, desc = "Harpoon: add file" },
-      -- <leader>hr, not <leader>r: <leader>rn (rename) would make it pause
       { "<leader>hr", function() harpoon_list():remove() end, desc = "Harpoon: remove file" },
       {
         "<leader>e",

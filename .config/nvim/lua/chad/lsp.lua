@@ -58,16 +58,16 @@ local function on_attach(buf, client)
   end
   local lsp = vim.lsp.buf
 
+  -- Neovim already maps these whenever an LSP client is attached (0.12+), so
+  -- they aren't repeated here (`:help lsp-defaults`):
+  --   grn rename            gra code action        grr references
+  --   gri implementation    grt type definition    grx run code lens
+  --   gO  document symbols  K   hover              <C-s> signature help (insert)
+  -- Only keys Neovim doesn't provide are added below. (No `gr` map: it would
+  -- make every gr* key wait for 'timeoutlen'.)
   map("n", "gD", lsp.declaration, "Go to declaration")
   map("n", "gd", lsp.definition, "Go to definition")
-  map("n", "gI", lsp.implementation, "Go to implementation")
   map("n", "gs", lsp.signature_help, "Signature help")
-  -- References and code actions use Neovim's built-in LSP keys (0.11+):
-  -- grr references, gra code action, grn rename, gri implementation,
-  -- grt type definition, grx run code lens. (No `gr` or <leader>ca here: `gr`
-  -- would block all of those, and <leader>ca clashed with <leader>c + a-objects.)
-  map("n", "<leader>D", lsp.type_definition, "Type definition")
-  map("n", "<leader>rn", lsp.rename, "Rename")
   -- No explicit lsp_format here, so per-filetype settings apply (Rust prefers
   -- rust-analyzer); everything else falls back to LSP via default_format_opts.
   -- <leader>fm, not <leader>f: <leader>ff/fb/fs would make it pause 'timeoutlen'
@@ -76,7 +76,7 @@ local function on_attach(buf, client)
     vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf }), { bufnr = buf })
   end, "Toggle inlay hints")
 
-  -- rust-analyzer gets richer versions of K and gra via rustaceanvim.
+  -- In Rust buffers, K and gra are replaced with rustaceanvim's richer versions.
   -- Keyed on filetype (not client) so a second client attaching later (rustowl,
   -- typos_lsp, ...) can't clobber them.
   if vim.bo[buf].filetype == "rust" then
@@ -94,20 +94,16 @@ local function on_attach(buf, client)
     map("n", "K", rust_or(lsp.hover, "hover", "actions"), "Rust hover actions")
     -- Neovim's own gra can't show rust-analyzer's grouped code actions
     map({ "n", "x" }, "gra", rust_or(lsp.code_action, "codeAction"), "Rust code action (grouped)")
-  else
-    map("n", "K", lsp.hover, "Hover")
   end
 
   if client:supports_method("textDocument/inlayHint", buf) then
     vim.lsp.inlay_hint.enable(true, { bufnr = buf })
   end
 
-  -- Code lenses (e.g. "▶ Run | Debug" above Rust mains/tests, gopls lenses)
+  -- Code lenses (e.g. "▶ Run | Debug" above Rust mains/tests, gopls lenses);
+  -- run the one under the cursor with grx
   if client:supports_method("textDocument/codeLens", buf) then
     vim.lsp.codelens.enable(true, { bufnr = buf })
-    -- (not <leader>cl: <leader>c is "change without yanking", so <leader>cl
-    -- would hijack `"_cl`)
-    map("n", "<leader>lr", vim.lsp.codelens.run, "Run code lens")
   end
 
   local highlight = "textDocument/documentHighlight"
