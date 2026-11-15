@@ -90,10 +90,10 @@ local function on_attach(buf, client)
       end
     end
     map("n", "K", rust_or(lsp.hover, "hover", "actions"), "Rust hover actions")
-    map({ "n", "v" }, "<leader>ca", rust_or(lsp.code_action, "codeAction"), "Rust code action (grouped)")
+    map({ "n", "x" }, "<leader>ca", rust_or(lsp.code_action, "codeAction"), "Rust code action (grouped)")
   else
     map("n", "K", lsp.hover, "Hover")
-    map({ "n", "v" }, "<leader>ca", lsp.code_action, "Code action")
+    map({ "n", "x" }, "<leader>ca", lsp.code_action, "Code action")
   end
 
   if client:supports_method("textDocument/inlayHint", buf) then
@@ -103,7 +103,9 @@ local function on_attach(buf, client)
   -- Code lenses (e.g. "▶ Run | Debug" above Rust mains/tests, gopls lenses)
   if client:supports_method("textDocument/codeLens", buf) then
     vim.lsp.codelens.enable(true, { bufnr = buf })
-    map("n", "<leader>cl", vim.lsp.codelens.run, "Run code lens")
+    -- (not <leader>cl: <leader>c is "change without yanking", so <leader>cl
+    -- would hijack `"_cl`)
+    map("n", "<leader>lr", vim.lsp.codelens.run, "Run code lens")
   end
 
   local highlight = "textDocument/documentHighlight"

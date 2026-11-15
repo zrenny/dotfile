@@ -59,10 +59,10 @@ map("<leader>Rs", rust("relatedTests"), "related tests")
 -- Editing
 map("<leader>Rm", rust("expandMacro"), "expand macro")
 map("<leader>Rj", rust("joinLines"), "join lines")
-map("<leader>Rj", ":RustLsp joinLines<CR>", "join selected lines", "v") -- needs the '<,'> range
+map("<leader>Rj", ":RustLsp joinLines<CR>", "join selected lines", "x") -- needs the '<,'> range
 map("<leader>Ru", rust("moveItem", "up"), "move item up")
 map("<leader>Rn", rust("moveItem", "down"), "move item down")
-map("<leader>Rh", rust("hover", "range"), "hover range (type of selection)", "v")
+map("<leader>Rh", rust("hover", "range"), "hover range (type of selection)", "x")
 map("<leader>Rw", rust("reloadWorkspace"), "reload workspace")
 
 -- RustOwl ownership/lifetime highlighting (only if the plugin is loaded)

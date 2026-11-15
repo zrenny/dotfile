@@ -1,7 +1,11 @@
 -- Core (plugin-free) keymaps. Plugin keymaps live in each plugin spec's `keys`,
 -- LSP keymaps in lua/chad/lsp.lua, Rust keymaps in after/ftplugin/rust.lua.
-local function map(mode, lhs, rhs, opts)
-  vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", { silent = true }, opts or {}))
+--
+-- Visual-mode maps use "x", not "v": "v" also covers *select* mode, which is
+-- what snippet placeholders use, so e.g. a "v" map on H would turn typing
+-- "Hello" over a placeholder into "^ello".
+local function map(mode, lhs, rhs, desc, opts)
+  vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", { silent = true, desc = desc }, opts or {}))
 end
 
 local function close_floating()
@@ -12,77 +16,77 @@ local function close_floating()
   end
 end
 
-map("", "<Space>", "<Nop>")
-map("c", "<C-a>", "<Home>", { silent = false })
+map({ "n", "x" }, "<Space>", "<Nop>", "Leader key")
+map("c", "<C-a>", "<Home>", "Cmdline: go to start", { silent = false })
 
 -- Normal --
-map("n", "L", "$")
-map("n", "H", "^")
-map("n", "<ESC>", close_floating)
+map("n", "L", "$", "End of line")
+map("n", "H", "^", "First non-blank of line")
+map("n", "<ESC>", close_floating, "Close floating windows")
 
 -- Window navigation
-map("n", "<C-h>", "<C-w>h")
-map("n", "<C-j>", "<C-w>j")
-map("n", "<C-k>", "<C-w>k")
-map("n", "<C-l>", "<C-w>l")
+map("n", "<C-h>", "<C-w>h", "Window left")
+map("n", "<C-j>", "<C-w>j", "Window down")
+map("n", "<C-k>", "<C-w>k", "Window up")
+map("n", "<C-l>", "<C-w>l", "Window right")
 
-map("n", "J", "mzJ`z")
-map("n", "<C-d>", "<C-d>zz")
-map("n", "<C-u>", "<C-u>zz")
-map("n", "n", "nzzzv")
-map("n", "N", "Nzzzv")
+map("n", "J", "mzJ`z", "Join lines (keep cursor)")
+map("n", "<C-d>", "<C-d>zz", "Half page down (centred)")
+map("n", "<C-u>", "<C-u>zz", "Half page up (centred)")
+map("n", "n", "nzzzv", "Next match (centred)")
+map("n", "N", "Nzzzv", "Previous match (centred)")
 
 -- Quickfix
-map("n", "co", "<cmd>copen<CR>")
-map("n", "cc", "<cmd>cclose<CR>")
-map("n", "cj", "<cmd>cnext<CR>zz")
-map("n", "ck", "<cmd>cprev<CR>zz")
+map("n", "co", "<cmd>copen<CR>", "Quickfix: open")
+map("n", "cc", "<cmd>cclose<CR>", "Quickfix: close")
+map("n", "cj", "<cmd>cnext<CR>zz", "Quickfix: next")
+map("n", "ck", "<cmd>cprev<CR>zz", "Quickfix: previous")
 
 -- Location list
-map("n", "lo", "<cmd>lopen<CR>")
-map("n", "lc", "<cmd>lclose<CR>")
-map("n", "lj", "<cmd>lnext<CR>zz")
-map("n", "lk", "<cmd>lprev<CR>zz")
+map("n", "lo", "<cmd>lopen<CR>", "Loclist: open")
+map("n", "lc", "<cmd>lclose<CR>", "Loclist: close")
+map("n", "lj", "<cmd>lnext<CR>zz", "Loclist: next")
+map("n", "lk", "<cmd>lprev<CR>zz", "Loclist: previous")
 
 -- Resize
-map("n", "<A-Up>", "<cmd>resize +2<CR>")
-map("n", "<A-Down>", "<cmd>resize -2<CR>")
-map("n", "<A-Left>", "<cmd>vertical resize +2<CR>")
-map("n", "<A-Right>", "<cmd>vertical resize -2<CR>")
+map("n", "<A-Up>", "<cmd>resize +2<CR>", "Taller window")
+map("n", "<A-Down>", "<cmd>resize -2<CR>", "Shorter window")
+map("n", "<A-Left>", "<cmd>vertical resize +2<CR>", "Wider window")
+map("n", "<A-Right>", "<cmd>vertical resize -2<CR>", "Narrower window")
 
 -- Buffers
-map("n", "<TAB>", "<cmd>bn<CR>")
-map("n", "<S-TAB>", "<cmd>bp<CR>")
-map("n", "<leader>bd", "<cmd>bd<CR>")
-map("n", "<leader>bda", "<cmd>bd | bd<CR>")
+map("n", "<TAB>", "<cmd>bn<CR>", "Next buffer")
+map("n", "<S-TAB>", "<cmd>bp<CR>", "Previous buffer")
+map("n", "<leader>bd", "<cmd>bd<CR>", "Delete buffer")
+map("n", "<leader>bda", "<cmd>bd | bd<CR>", "Delete buffer twice")
 
 -- System clipboard
-map({ "n", "v" }, "<leader>y", [["+y]])
-map("n", "<leader>Y", [["+Y]])
+map({ "n", "x" }, "<leader>y", [["+y]], "Yank to system clipboard")
+map("n", "<leader>Y", [["+Y]], "Yank line to system clipboard")
 
 -- Insert --
-map("i", "<C-b>", "<C-o>db")
-map("i", "<C-w>", "<C-o>dw")
-map("i", "<C-u>", "<C-o>d^")
-map("i", "<C-d>", "<C-o>D")
-map("i", "<C-h>", "<C-o><<")
-map("i", "<C-l>", "<C-o>>>")
-map("i", "jk", "<ESC>")
+map("i", "<C-b>", "<C-o>db", "Delete word before cursor")
+map("i", "<C-w>", "<C-o>dw", "Delete word after cursor")
+map("i", "<C-u>", "<C-o>d^", "Delete to start of line")
+map("i", "<C-d>", "<C-o>D", "Delete to end of line")
+map("i", "<C-h>", "<C-o><<", "Dedent line")
+map("i", "<C-l>", "<C-o>>>", "Indent line")
+map("i", "jk", "<ESC>", "Exit insert mode")
 
 -- Visual --
-map("v", "<", "<gv")
-map("v", ">", ">gv")
-map({ "v", "x" }, "<leader>p", [["_dP]])
-map({ "n", "v" }, "<leader>d", [["_d]])
-map({ "n", "v" }, "<leader>c", [["_c]])
-map("n", "<leader>x", [["_x]])
-map("x", "J", ":move '>+1<CR>gv-gv")
-map("x", "K", ":move '<-2<CR>gv-gv")
-map({ "v", "x" }, "H", "^")
-map({ "v", "x" }, "L", "$")
+map("x", "<", "<gv", "Dedent (keep selection)")
+map("x", ">", ">gv", "Indent (keep selection)")
+map("x", "<leader>p", [["_dP]], "Paste without yanking selection")
+map({ "n", "x" }, "<leader>d", [["_d]], "Delete without yanking")
+map({ "n", "x" }, "<leader>c", [["_c]], "Change without yanking")
+map("n", "<leader>x", [["_x]], "Delete char without yanking")
+map("x", "J", ":move '>+1<CR>gv-gv", "Move selection down")
+map("x", "K", ":move '<-2<CR>gv-gv", "Move selection up")
+map("x", "H", "^", "First non-blank of line")
+map("x", "L", "$", "End of line")
 
 -- Terminal --
-map("t", "<A-Up>", "<cmd>resize +2<CR>")
-map("t", "<A-Down>", "<cmd>resize -2<CR>")
-map("t", "<A-Left>", "<cmd>vertical resize -2<CR>")
-map("t", "<A-Right>", "<cmd>vertical resize +2<CR>")
+map("t", "<A-Up>", "<cmd>resize +2<CR>", "Taller window")
+map("t", "<A-Down>", "<cmd>resize -2<CR>", "Shorter window")
+map("t", "<A-Left>", "<cmd>vertical resize -2<CR>", "Narrower window")
+map("t", "<A-Right>", "<cmd>vertical resize +2<CR>", "Wider window")

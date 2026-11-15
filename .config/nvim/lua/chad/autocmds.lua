@@ -41,12 +41,12 @@ autocmd("TextYankPost", {
 autocmd("TermOpen", {
   desc = "Terminal-mode navigation (toggleterm, :RustLsp runnables, etc.)",
   callback = function(ev)
-    local o = { buffer = ev.buf }
-    vim.keymap.set("t", "<esc>", [[<C-\><C-n>]], o)
-    vim.keymap.set("t", "jk", [[<C-\><C-n>]], o)
-    vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]], o)
-    vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]], o)
-    vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]], o)
-    vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]], o)
+    local function tmap(lhs, rhs, desc) vim.keymap.set("t", lhs, rhs, { buffer = ev.buf, desc = desc }) end
+    tmap("<esc>", [[<C-\><C-n>]], "Exit terminal mode")
+    tmap("jk", [[<C-\><C-n>]], "Exit terminal mode")
+    tmap("<C-h>", [[<Cmd>wincmd h<CR>]], "Window left")
+    tmap("<C-j>", [[<Cmd>wincmd j<CR>]], "Window down")
+    tmap("<C-k>", [[<Cmd>wincmd k<CR>]], "Window up")
+    tmap("<C-l>", [[<Cmd>wincmd l<CR>]], "Window right")
   end,
 })

@@ -28,7 +28,7 @@ return {
     { "<F6>", function() require("dapui").toggle() end, desc = "Debug: Toggle UI" },
     { "<F7>", function() require("dapui").open({ reset = true }) end, desc = "Debug: Reset UI" },
     { "<F8>", function() require("dapui").float_element() end, desc = "Debug: Float element" },
-    { "<F9>", function() require("dapui").eval() end, desc = "Debug: Evaluate", mode = { "n", "v" } },
+    { "<F9>", function() require("dapui").eval() end, desc = "Debug: Evaluate", mode = { "n", "x" } },
     { "<leader>w", function() require("dapui").open() end, desc = "Debug: Open UI" },
     { "<leader>W", function() require("dapui").close() end, desc = "Debug: Close UI" },
   },

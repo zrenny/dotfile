@@ -40,11 +40,11 @@ return {
         group = vim.api.nvim_create_augroup("chad_fugitive", { clear = true }),
         pattern = "fugitive",
         callback = function(ev)
-          local o = { buffer = ev.buf, silent = true }
-          vim.keymap.set("n", "<leader>p", function() vim.cmd.Git("push") end, o)
-          vim.keymap.set("n", "<leader>P", function() vim.cmd.Git({ "pull", "--rebase" }) end, o)
+          local function o(desc) return { buffer = ev.buf, silent = true, desc = desc } end
+          vim.keymap.set("n", "<leader>p", function() vim.cmd.Git("push") end, o("Git: push"))
+          vim.keymap.set("n", "<leader>P", function() vim.cmd.Git({ "pull", "--rebase" }) end, o("Git: pull --rebase"))
           -- set upstream if the branch wasn't set up with tracking
-          vim.keymap.set("n", "<leader>t", "<cmd>Git push -u origin<CR>", o)
+          vim.keymap.set("n", "<leader>t", "<cmd>Git push -u origin<CR>", o("Git: push -u origin"))
         end,
       })
     end,

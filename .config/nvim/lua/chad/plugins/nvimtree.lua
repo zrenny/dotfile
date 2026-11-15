@@ -3,17 +3,18 @@ local function on_attach(bufnr)
 
   local keymap = vim.keymap.set
 
-  local opts = {
-    buffer = bufnr,
-    noremap = true,
-    silent = true,
-    nowait = true,
-  }
+  local function opts(desc)
+    return { buffer = bufnr, noremap = true, silent = true, nowait = true, desc = "nvim-tree: " .. desc }
+  end
 
   api.config.mappings.default_on_attach(bufnr)
 
-  keymap("n", "h", api.node.open.horizontal, opts)
-  keymap("n", "v", api.node.open.vertical, opts)
+  -- The default <C-k> (Info) would block your <C-k> window-up from the tree
+  vim.keymap.del("n", "<C-k>", { buffer = bufnr })
+  keymap("n", "i", api.node.show_info_popup, opts("Info"))
+
+  keymap("n", "h", api.node.open.horizontal, opts("Open: horizontal split"))
+  keymap("n", "v", api.node.open.vertical, opts("Open: vertical split"))
 
   -- cd into the node under the cursor (its parent dir for files)
   keymap("n", "<leader>cd", function()
@@ -24,7 +25,7 @@ local function on_attach(bufnr)
     local dir = node.type == "directory" and node.absolute_path or vim.fs.dirname(node.absolute_path)
     vim.cmd.cd(dir)
     vim.notify("cwd: " .. dir)
-  end, opts)
+  end, opts("cd to node"))
 end
 
 return {

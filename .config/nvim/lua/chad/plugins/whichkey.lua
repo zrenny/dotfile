@@ -14,6 +14,7 @@ return {
       { "<leader>f", group = "find / format" },
       { "<leader>g", group = "git / grep" },
       { "<leader>h", group = "harpoon" },
+      { "<leader>l", group = "live grep / code lens" },
       { "<leader>s", group = "diagnostics → list" },
     },
   },
