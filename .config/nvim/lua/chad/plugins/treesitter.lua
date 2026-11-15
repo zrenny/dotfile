@@ -27,7 +27,18 @@ return {
     lazy = false, -- does not support lazy-loading
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter").install(parsers) -- async; no-op when installed
+      local ts = require("nvim-treesitter")
+      if type(ts.install) ~= "function" then
+        -- lazy.nvim only switches branches on sync/restore, so an existing
+        -- install can still be on the old `master` branch (no install()).
+        vim.notify(
+          "nvim-treesitter is still on the old `master` branch.\n"
+            .. "Run :Lazy restore (or delete ~/.local/share/nvim/lazy/nvim-treesitter) and restart.",
+          vim.log.levels.WARN
+        )
+        return
+      end
+      ts.install(parsers) -- async; no-op when installed
 
       vim.api.nvim_create_autocmd("FileType", {
         group = vim.api.nvim_create_augroup("chad_treesitter", { clear = true }),
