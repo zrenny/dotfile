@@ -29,11 +29,13 @@ return {
     config = function()
       local ts = require("nvim-treesitter")
       if type(ts.install) ~= "function" then
-        -- lazy.nvim only switches branches on sync/restore, so an existing
-        -- install can still be on the old `master` branch (no install()).
+        -- Still on the old `master` branch (no install()). lazy.nvim only
+        -- switches branches on update, and if lazy-lock.json recorded the old
+        -- master commit, a reinstall or :Lazy restore puts it right back.
+        -- :Lazy update ignores the lockfile, moves to `main` and re-pins it.
         vim.notify(
           "nvim-treesitter is still on the old `master` branch.\n"
-            .. "Run :Lazy restore (or delete ~/.local/share/nvim/lazy/nvim-treesitter) and restart.",
+            .. "Run :Lazy update nvim-treesitter, then restart Neovim.",
           vim.log.levels.WARN
         )
         return
