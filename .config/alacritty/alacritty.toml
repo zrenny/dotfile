@@ -144,6 +144,47 @@ render_timer       = false
 
 live_config_reload = true
 
+# Keyboard scrolling (no mouse wheel needed).
+# mode = "~Alt" means these only act at the shell prompt; full-screen apps
+# (Neovim, zellij, less, ...) still receive the keys themselves.
+# Built-in defaults still work too: Shift+fn+Up/Down (page),
+# Shift+fn+Left/Right (top/bottom), Ctrl+Shift+Space (vi mode).
+[[keyboard.bindings]]
+key    = "ArrowUp"
+mods   = "Shift"
+mode   = "~Alt"
+action = "ScrollLineUp"
+
+[[keyboard.bindings]]
+key    = "ArrowDown"
+mods   = "Shift"
+mode   = "~Alt"
+action = "ScrollLineDown"
+
+[[keyboard.bindings]]
+key    = "ArrowUp"
+mods   = "Command"
+mode   = "~Alt"
+action = "ScrollHalfPageUp"
+
+[[keyboard.bindings]]
+key    = "ArrowDown"
+mods   = "Command"
+mode   = "~Alt"
+action = "ScrollHalfPageDown"
+
+[[keyboard.bindings]]
+key    = "ArrowUp"
+mods   = "Command|Shift"
+mode   = "~Alt"
+action = "ScrollToTop"
+
+[[keyboard.bindings]]
+key    = "ArrowDown"
+mods   = "Command|Shift"
+mode   = "~Alt"
+action = "ScrollToBottom"
+
 # vi mode keybindings
 # [[keyboard.bindings]]
 # action = "ScrollToBottom"
