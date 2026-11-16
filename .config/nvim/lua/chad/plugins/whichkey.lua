@@ -9,6 +9,7 @@ return {
     plugins = { registers = true },
     spec = {
       { "<leader>R", group = "rust" },
+      { "<leader>Ri", group = "miri (UB checker)" },
       { "<leader>C", group = "crates (Cargo.toml)" },
       { "<leader>b", group = "buffer / breakpoint" },
       { "<leader>f", group = "find / format" },

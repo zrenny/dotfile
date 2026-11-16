@@ -98,8 +98,6 @@ if ! command -v rustup &>/dev/null; then
 	source "$HOME/.cargo/env"
 fi
 
-# rustup install nightly
-
 go_tools=(
 	golang.org/x/tools/cmd/callgraph
 	github.com/go-delve/delve/cmd/dlv
@@ -126,15 +124,13 @@ for tool in "${go_tools[@]}"; do
 	go install ${tool}@latest
 done
 
-# rust_nightly_tools=(
-# 	miri
-# )
-
-# for tool in "${rust_nightly_tools[@]}"; do
-#	rust +nightly component add "$tool"
-# done
-
 rustup component add clippy rust-analyzer rustfmt rust-src
+
+# Miri (undefined-behaviour checker for unsafe code; <leader>Ri* in nvim).
+# Nightly-only. The minimal profile skips nightly's docs; `miri setup` builds
+# the standard library Miri needs once, instead of on the first `cargo miri`.
+rustup toolchain install nightly --profile minimal --component miri,rust-src
+cargo +nightly miri setup
 
 # RustOwl (ownership/lifetime visualiser; toggled with <leader>Rb in nvim).
 # Prebuilt binary via the project's installer (`cargo install` builds from source)
