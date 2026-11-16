@@ -139,10 +139,9 @@ persistent_logging = false
 print_events       = false
 render_timer       = false
 
-[general]
-# alacritty.toml
-
-live_config_reload = true
+# (No [general] section: its only setting was live_config_reload = true, which
+# is the default in every Alacritty version, and Alacritty < 0.14 warns
+# "Unused config key: general" because it doesn't know that section.)
 
 # Keyboard scrolling (no mouse wheel needed).
 # mode = "~Alt" means these only act at the shell prompt; full-screen apps
