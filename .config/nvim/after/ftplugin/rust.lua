@@ -72,10 +72,13 @@ local miri_ok = false
 local function miri(args, desc)
   return function()
     if not miri_ok then
-      local r = vim.system({ "cargo", "+nightly", "miri", "--version" }, { text = true }):wait()
+      -- RUSTUP_AUTO_INSTALL=0: without it, a missing nightly makes rustup
+      -- download the whole toolchain right here and freeze Neovim meanwhile.
+      local r = vim.system({ "cargo", "+nightly", "miri", "--version" },
+        { text = true, env = { RUSTUP_AUTO_INSTALL = "0" } }):wait(10000)
       if r.code ~= 0 then
-        vim.notify("Miri isn't installed: run `rustup toolchain install nightly --component miri,rust-src`",
-          vim.log.levels.WARN)
+        vim.notify("Miri isn't installed: run `rustup toolchain install nightly --allow-downgrade "
+          .. "--component miri,rust-src` (or rerun install.sh)", vim.log.levels.WARN)
         return
       end
       miri_ok = true
@@ -90,21 +93,40 @@ local function miri(args, desc)
   end
 end
 
--- Name of the function around the cursor (used as the test filter).
-local function fn_under_cursor()
-  local ok, node = pcall(vim.treesitter.get_node, { bufnr = buf })
-  while ok and node do
-    if node:type() == "function_item" then
-      local name = node:field("name")[1]
-      return name and vim.treesitter.get_node_text(name, buf)
+-- Does this fn have a test attribute? (#[test], #[tokio::test], #[rstest], ...)
+local function is_test_fn(fn)
+  local sib = fn:prev_named_sibling()
+  while sib and (sib:type() == "attribute_item" or sib:type():match("comment$")) do
+    if sib:type() == "attribute_item" and vim.treesitter.get_node_text(sib, buf):match("test") then
+      return true
     end
-    node = node:parent()
+    sib = sib:prev_named_sibling()
   end
+  return false
+end
+
+-- Test filter for the #[test] fn around the cursor, e.g. "tests::parses_empty"
+-- (inline `mod` names included, so a short fn name matches fewer other tests).
+-- nil when the cursor isn't inside a test function.
+local function test_under_cursor()
+  local ok, node = pcall(vim.treesitter.get_node, { bufnr = buf })
+  if not ok then return nil end
+  while node and node:type() ~= "function_item" do node = node:parent() end
+  if not node or not is_test_fn(node) then return nil end
+  local parts = { vim.treesitter.get_node_text(node:field("name")[1], buf) }
+  local p = node:parent()
+  while p do
+    if p:type() == "mod_item" then
+      table.insert(parts, 1, vim.treesitter.get_node_text(p:field("name")[1], buf))
+    end
+    p = p:parent()
+  end
+  return table.concat(parts, "::")
 end
 
 map("<leader>Rit", miri(function()
-  local name = fn_under_cursor()
-  -- not inside a function: run every test
+  local name = test_under_cursor()
+  -- not inside a test function: run every test
   return name and { "test", "--", name } or { "test" }
 end, "test under cursor"), "Miri: test under cursor")
 map("<leader>RiT", miri(function() return { "test" } end, "all tests"), "Miri: all tests")

@@ -127,9 +127,12 @@ done
 rustup component add clippy rust-analyzer rustfmt rust-src
 
 # Miri (undefined-behaviour checker for unsafe code; <leader>Ri* in nvim).
-# Nightly-only. The minimal profile skips nightly's docs; `miri setup` builds
-# the standard library Miri needs once, instead of on the first `cargo miri`.
-rustup toolchain install nightly --profile minimal --component miri,rust-src
+# Nightly-only. The minimal profile skips nightly's docs. --allow-downgrade:
+# some nightlies ship without Miri; this picks the newest one that has it
+# instead of failing (which would stop this script, it runs with `set -e`).
+# `miri setup` builds the standard library Miri needs once, instead of on the
+# first `cargo miri`.
+rustup toolchain install nightly --profile minimal --allow-downgrade --component miri,rust-src
 cargo +nightly miri setup
 
 # RustOwl (ownership/lifetime visualiser; toggled with <leader>Rb in nvim).
