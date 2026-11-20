@@ -144,7 +144,7 @@ return {
     -- Only load once the `rustowl` binary is installed (see install.sh)
     cond = function() return vim.fn.executable("rustowl") == 1 end,
     opts = {
-      auto_enable = false, -- toggle with <leader>Ro in Rust buffers
+      auto_enable = false, -- toggle with <leader>Rb in Rust buffers
       idle_time = 500,
     },
   },
