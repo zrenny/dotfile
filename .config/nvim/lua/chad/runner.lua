@@ -18,6 +18,9 @@ function M.close()
     pcall(vim.api.nvim_win_close, state.win, true)
   end
   state.win = nil
+  -- closing wipes the buffer and stops its job; forget it so that job's
+  -- on_exit isn't reported (e.g. as "cargo doc failed")
+  state.buf = nil
 end
 
 ---@class chad.RunOpts
@@ -29,6 +32,11 @@ end
 ---@param opts? chad.RunOpts
 function M.run(cmd, opts)
   opts = opts or {}
+  -- the split lives in one tab; started from another tab, move it here
+  if win_ok() and vim.api.nvim_win_get_tabpage(state.win) ~= vim.api.nvim_get_current_tabpage() then
+    pcall(vim.api.nvim_win_close, state.win, true)
+    state.win = nil
+  end
   local old = state.buf
   local buf = vim.api.nvim_create_buf(false, true)
   state.buf = buf
@@ -52,8 +60,11 @@ function M.run(cmd, opts)
       env = opts.env,
       on_exit = function(_, code)
         vim.schedule(function()
-          -- ignore runs that were replaced (killed) by a newer one
-          if state.buf == buf and opts.on_exit then opts.on_exit(code) end
+          -- ignore runs that were replaced by a newer one or closed (q, :q):
+          -- their job was stopped, it didn't fail
+          if state.buf == buf and vim.api.nvim_buf_is_valid(buf) and opts.on_exit then
+            opts.on_exit(code)
+          end
         end)
       end,
     })
