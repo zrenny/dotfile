@@ -147,9 +147,11 @@ local function cargo_docs_info(cwd)
   if not ok then return nil end
   local doc_dir = vim.fs.joinpath(meta.target_directory, "doc")
   local own, index = {}, nil
-  local manifest = vim.fs.normalize(vim.fs.joinpath(cwd, "Cargo.toml"))
+  -- real paths: cargo reports resolved paths, the buffer may be via a symlink
+  local function real(p) return vim.uv.fs_realpath(p) or vim.fs.normalize(p) end
+  local manifest = real(vim.fs.joinpath(cwd, "Cargo.toml"))
   for _, pkg in ipairs(meta.packages) do
-    local mine = vim.fs.normalize(pkg.manifest_path) == manifest
+    local mine = real(pkg.manifest_path) == manifest
     -- rustdoc documents the library if there is one, otherwise the binaries
     for _, want_lib in ipairs({ true, false }) do
       for _, t in ipairs(pkg.targets) do
@@ -184,13 +186,18 @@ local function open_docs_for_cursor(win, cwd)
     local loc = type(res) == "table" and str(res["local"]) or nil
     local web = type(res) == "table" and str(res.web) or str(res)
     if loc and vim.uv.fs_stat(vim.uri_to_fname(loc)) then
-      return vim.ui.open(loc)
+      -- rust-analyzer sends `file:////abs/path...#method.x`; reopen as a clean
+      -- file:/// URL, keeping the #anchor that scrolls to methods/fields
+      return vim.ui.open(vim.uri_from_fname(vim.uri_to_fname(loc)) .. (loc:match("#.*$") or ""))
     end
     -- `.../target/doc/<crate>/...`: a page of your own code that rustdoc
     -- didn't generate (e.g. an item inside a fn): show the crate front page
     local crate = loc and info and vim.uri_to_fname(loc):match("/doc/([^/]+)/")
     if not web or (crate and info.own[crate]) then return front_page() end
-    vim.ui.open(web) -- std / dependencies (built with --no-deps)
+    -- std / registry dependencies (not built: --no-deps keeps it fast).
+    -- Limit: a path dependency outside your workspace isn't built either, and
+    -- rust-analyzer's link for it is a made-up docs.rs one.
+    vim.ui.open(web)
   end, buf)
 end
 
@@ -200,7 +207,8 @@ map("<leader>RO", function()
   vim.cmd("botright 12split | enew")
   local term_win = vim.api.nvim_get_current_win()
   vim.bo.bufhidden = "wipe"
-  vim.fn.jobstart({ "cargo", "doc", "--no-deps", "--document-private-items" }, {
+  -- --workspace: symbols from sibling crates in the same workspace get pages too
+  vim.fn.jobstart({ "cargo", "doc", "--workspace", "--no-deps", "--document-private-items" }, {
     term = true,
     cwd = cwd,
     on_exit = function(_, code)
