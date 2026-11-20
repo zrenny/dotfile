@@ -85,10 +85,7 @@ local function miri(args, desc)
     end
     local cmd = vim.list_extend({ "cargo", "+nightly", "miri" }, args())
     local cwd = vim.fs.root(buf, "Cargo.toml") or vim.fn.getcwd()
-    vim.cmd("botright 15split | enew")
-    vim.bo.bufhidden = "wipe"
-    vim.fn.jobstart(cmd, { term = true, cwd = cwd })
-    vim.cmd("normal! G") -- follow the output
+    require("chad.runner").run(cmd, { cwd = cwd }) -- shared split, see chad/runner.lua
     vim.notify("Miri: " .. desc, vim.log.levels.INFO)
   end
 end
@@ -204,26 +201,22 @@ end
 map("<leader>RO", function()
   local win = vim.api.nvim_get_current_win()
   local cwd = vim.fs.root(buf, "Cargo.toml") or vim.fn.getcwd()
-  vim.cmd("botright 12split | enew")
-  local term_win = vim.api.nvim_get_current_win()
-  vim.bo.bufhidden = "wipe"
+  local runner = require("chad.runner")
   -- --workspace: symbols from sibling crates in the same workspace get pages too
-  vim.fn.jobstart({ "cargo", "doc", "--workspace", "--no-deps", "--document-private-items" }, {
-    term = true,
+  runner.run({ "cargo", "doc", "--workspace", "--no-deps", "--document-private-items" }, {
     cwd = cwd,
-    on_exit = function(_, code)
-      vim.schedule(function()
-        if code ~= 0 then
-          vim.notify("cargo doc failed (output is in the split below)", vim.log.levels.ERROR)
-          return
-        end
-        if vim.api.nvim_win_is_valid(term_win) then vim.api.nvim_win_close(term_win, true) end
-        if vim.api.nvim_win_is_valid(win) then open_docs_for_cursor(win, cwd) end
-      end)
+    on_exit = function(code)
+      if code ~= 0 then
+        vim.notify("cargo doc failed (output is in the split below)", vim.log.levels.ERROR)
+        return
+      end
+      runner.close() -- nothing to read when it worked
+      if vim.api.nvim_win_is_valid(win) then open_docs_for_cursor(win, cwd) end
     end,
   })
-  vim.api.nvim_set_current_win(win) -- keep editing while it builds
 end, "build my docs (cargo doc) + open symbol")
+
+map("<leader>Rq", function() require("chad.runner").close() end, "close the output split")
 
 -- RustOwl ownership/lifetime highlighting (only if the plugin is loaded)
 if package.loaded["rustowl"] or pcall(require, "rustowl") then

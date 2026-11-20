@@ -57,8 +57,12 @@ return {
       ---@type rustaceanvim.Opts
       vim.g.rustaceanvim = {
         tools = {
-          -- Run tests in the background and surface failures as diagnostics
+          -- Single tests run in the background; failures show as diagnostics
           test_executor = "background",
+          -- Everything else (runnables, whole-crate tests, ▶ Run lenses) uses
+          -- one shared bottom split that the next run replaces (chad/runner.lua)
+          executor = require("chad.runner").executor,
+          crate_test_executor = require("chad.runner").executor,
           code_actions = { ui_select_fallback = true },
         },
         server = {
