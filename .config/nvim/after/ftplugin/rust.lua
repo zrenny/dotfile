@@ -129,6 +129,86 @@ end, "test under cursor"), "Miri: test under cursor")
 map("<leader>RiT", miri(function() return { "test" } end, "all tests"), "Miri: all tests")
 map("<leader>Rir", miri(function() return { "run" } end, "run"), "Miri: cargo run")
 
+-- Tests with their printed output (println!, dbg!) shown live, in the
+-- shared output split. (<leader>Rt runs single tests in the background,
+-- which only reports pass/fail.)
+
+-- The nearest test as rust-analyzer sees it: the test fn under the cursor
+-- (run with --exact), else the innermost test module. Calls back with nil
+-- if rust-analyzer isn't running or the cursor isn't in a test.
+local function nearest_test_runnable(cb)
+  local client = vim.lsp.get_clients({ bufnr = buf, name = "rust-analyzer" })[1]
+  if not client then return cb(nil) end
+  local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
+  client:request("experimental/runnables", params, function(err, res)
+    if err or type(res) ~= "table" then return cb(nil) end
+    local fn_test, mod_test
+    for _, r in ipairs(res) do
+      local label = type(r.label) == "string" and r.label or ""
+      -- skip "test x + UPDATE_EXPECT"-style entries: they rewrite snapshots
+      if r.kind == "cargo" and not label:find(" + ", 1, true) then
+        if not fn_test and (vim.startswith(label, "test ") or vim.startswith(label, "doctest ")) then
+          fn_test = r
+        elseif vim.startswith(label, "test-mod ") then
+          -- innermost module = longest path
+          if not mod_test or #label > #mod_test.label then mod_test = r end
+        end
+      end
+    end
+    cb(fn_test or mod_test)
+  end, buf)
+end
+
+local function with_output(args)
+  args = vim.list_extend({}, args)
+  if not vim.tbl_contains(args, "--nocapture") and not vim.tbl_contains(args, "--no-capture") then
+    table.insert(args, "--nocapture")
+  end
+  return args
+end
+
+local function run_with_output(cmd, opts, what)
+  local runner = require("chad.runner")
+  runner.last_test_with_output = { cmd = cmd, opts = opts, what = what }
+  runner.run(cmd, opts)
+  vim.notify("Tests with output: " .. what, vim.log.levels.INFO)
+end
+
+map("<leader>Rvt", function()
+  local cwd = vim.fs.root(buf, "Cargo.toml") or vim.fn.getcwd()
+  nearest_test_runnable(function(r)
+    if r then
+      local a = r.args or {}
+      local args = vim.list_extend(vim.list_extend({}, a.cargoArgs or {}), a.cargoExtraArgs or {})
+      table.insert(args, "--")
+      vim.list_extend(args, with_output(a.executableArgs or {}))
+      local env = type(a.environment) == "table" and next(a.environment) and a.environment or nil
+      local prog = type(a.overrideCargo) == "string" and a.overrideCargo or "cargo"
+      return run_with_output(vim.list_extend({ prog }, args),
+        { cwd = a.cwd or a.workspaceRoot or cwd, env = env }, r.label)
+    end
+    -- no rust-analyzer: filter by the #[test] fn's name, else run everything
+    local name = test_under_cursor()
+    local args = name and { "test", "--", name, "--nocapture" } or { "test", "--", "--nocapture" }
+    run_with_output(vim.list_extend({ "cargo" }, args), { cwd = cwd }, name or "all tests")
+  end)
+end, "test under cursor, with output")
+
+map("<leader>RvT", function()
+  local cwd = vim.fs.root(buf, "Cargo.toml") or vim.fn.getcwd()
+  -- one at a time, so the output of different tests doesn't interleave
+  run_with_output({ "cargo", "test", "--", "--nocapture", "--test-threads=1" }, { cwd = cwd },
+    "all tests (one at a time)")
+end, "all tests, with output (one at a time)")
+
+map("<leader>Rvr", function()
+  local last = require("chad.runner").last_test_with_output
+  if not last then
+    return vim.notify("No test run with output yet (<leader>Rvt / <leader>RvT)", vim.log.levels.WARN)
+  end
+  run_with_output(last.cmd, last.opts, last.what)
+end, "rerun last test with output")
+
 -- Docs for your own code: build them with `cargo doc` (private items too),
 -- then open the page for the symbol under the cursor in the browser.
 -- Why not just <leader>Ro: for your own crates rust-analyzer's fallback is a
