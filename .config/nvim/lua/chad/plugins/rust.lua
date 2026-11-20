@@ -76,6 +76,13 @@ return {
                 -- Separate target dir so `cargo build` in a terminal doesn't
                 -- block on rust-analyzer's check (and vice versa)
                 targetDir = true,
+                -- cfg flags rust-analyzer treats as on (editor analysis only;
+                -- cargo/clippy builds are unaffected). The first two are
+                -- rust-analyzer's defaults and must stay: this list replaces
+                -- the defaults rather than adding to them. `doctest`: items
+                -- marked #[cfg(doctest)] (holders for compile_fail doc tests)
+                -- aren't greyed out with an "inactive-code" hint.
+                cfgs = { "debug_assertions", "miri", "doctest" },
               },
               -- clippy on save (replaces the old checkOnSave.command setting)
               check = {
