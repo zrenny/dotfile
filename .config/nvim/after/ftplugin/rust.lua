@@ -53,7 +53,7 @@ map("<leader>Rk", rust("flyCheck", "run"), "run cargo check/clippy now")
 -- Navigation
 map("<leader>Rc", rust("openCargo"), "open Cargo.toml")
 map("<leader>Rp", rust("parentModule"), "parent module")
-map("<leader>Ro", rust("openDocs"), "open docs.rs for symbol")
+map("<leader>Ro", rust("openDocs"), "open docs for symbol (local if built, else docs.rs)")
 map("<leader>Rs", rust("relatedTests"), "related tests")
 
 -- Editing
@@ -131,6 +131,99 @@ map("<leader>Rit", miri(function()
 end, "test under cursor"), "Miri: test under cursor")
 map("<leader>RiT", miri(function() return { "test" } end, "all tests"), "Miri: all tests")
 map("<leader>Rir", miri(function() return { "run" } end, "run"), "Miri: cargo run")
+
+-- Docs for your own code: build them with `cargo doc` (private items too),
+-- then open the page for the symbol under the cursor in the browser.
+-- Why not just <leader>Ro: for your own crates rust-analyzer's fallback is a
+-- made-up docs.rs link, so without local docs it opens the wrong page.
+
+-- Doc folder names (crate targets, `-` -> `_`) of the workspace, plus where
+-- `cargo doc` writes. nil if `cargo metadata` fails.
+local function cargo_docs_info(cwd)
+  local r = vim.system({ "cargo", "metadata", "--no-deps", "--format-version", "1" },
+    { cwd = cwd, text = true }):wait(15000)
+  if r.code ~= 0 then return nil end
+  local ok, meta = pcall(vim.json.decode, r.stdout)
+  if not ok then return nil end
+  local doc_dir = vim.fs.joinpath(meta.target_directory, "doc")
+  local own, index = {}, nil
+  -- real paths: cargo reports resolved paths, the buffer may be via a symlink
+  local function real(p) return vim.uv.fs_realpath(p) or vim.fs.normalize(p) end
+  local manifest = real(vim.fs.joinpath(cwd, "Cargo.toml"))
+  for _, pkg in ipairs(meta.packages) do
+    local mine = real(pkg.manifest_path) == manifest
+    -- rustdoc documents the library if there is one, otherwise the binaries
+    for _, want_lib in ipairs({ true, false }) do
+      for _, t in ipairs(pkg.targets) do
+        local is_lib = vim.iter(t.kind):any(function(k) return k:match("lib") or k == "proc-macro" end)
+        if is_lib == want_lib and (is_lib or vim.tbl_contains(t.kind, "bin")) then
+          local name = t.name:gsub("-", "_")
+          own[name] = true
+          local page = vim.fs.joinpath(doc_dir, name, "index.html")
+          if mine and not index and vim.uv.fs_stat(page) then index = page end
+        end
+      end
+    end
+  end
+  return { doc_dir = doc_dir, own = own, index = index }
+end
+
+local function open_docs_for_cursor(win, cwd)
+  local info = cargo_docs_info(cwd)
+  local function front_page()
+    if info and info.index then
+      vim.ui.open(info.index)
+    else
+      vim.notify("Docs were built, but no front page was found under target/doc", vim.log.levels.WARN)
+    end
+  end
+  local client = vim.lsp.get_clients({ bufnr = buf, name = "rust-analyzer" })[1]
+  if not client then return front_page() end
+  local params = vim.lsp.util.make_position_params(win, client.offset_encoding)
+  client:request("experimental/externalDocs", params, function(_, res)
+    -- JSON null arrives as vim.NIL (truthy), so keep only real strings
+    local function str(v) return type(v) == "string" and v or nil end
+    local loc = type(res) == "table" and str(res["local"]) or nil
+    local web = type(res) == "table" and str(res.web) or str(res)
+    if loc and vim.uv.fs_stat(vim.uri_to_fname(loc)) then
+      -- rust-analyzer sends `file:////abs/path...#method.x`; reopen as a clean
+      -- file:/// URL, keeping the #anchor that scrolls to methods/fields
+      return vim.ui.open(vim.uri_from_fname(vim.uri_to_fname(loc)) .. (loc:match("#.*$") or ""))
+    end
+    -- `.../target/doc/<crate>/...`: a page of your own code that rustdoc
+    -- didn't generate (e.g. an item inside a fn): show the crate front page
+    local crate = loc and info and vim.uri_to_fname(loc):match("/doc/([^/]+)/")
+    if not web or (crate and info.own[crate]) then return front_page() end
+    -- std / registry dependencies (not built: --no-deps keeps it fast).
+    -- Limit: a path dependency outside your workspace isn't built either, and
+    -- rust-analyzer's link for it is a made-up docs.rs one.
+    vim.ui.open(web)
+  end, buf)
+end
+
+map("<leader>RO", function()
+  local win = vim.api.nvim_get_current_win()
+  local cwd = vim.fs.root(buf, "Cargo.toml") or vim.fn.getcwd()
+  vim.cmd("botright 12split | enew")
+  local term_win = vim.api.nvim_get_current_win()
+  vim.bo.bufhidden = "wipe"
+  -- --workspace: symbols from sibling crates in the same workspace get pages too
+  vim.fn.jobstart({ "cargo", "doc", "--workspace", "--no-deps", "--document-private-items" }, {
+    term = true,
+    cwd = cwd,
+    on_exit = function(_, code)
+      vim.schedule(function()
+        if code ~= 0 then
+          vim.notify("cargo doc failed (output is in the split below)", vim.log.levels.ERROR)
+          return
+        end
+        if vim.api.nvim_win_is_valid(term_win) then vim.api.nvim_win_close(term_win, true) end
+        if vim.api.nvim_win_is_valid(win) then open_docs_for_cursor(win, cwd) end
+      end)
+    end,
+  })
+  vim.api.nvim_set_current_win(win) -- keep editing while it builds
+end, "build my docs (cargo doc) + open symbol")
 
 -- RustOwl ownership/lifetime highlighting (only if the plugin is loaded)
 if package.loaded["rustowl"] or pcall(require, "rustowl") then
