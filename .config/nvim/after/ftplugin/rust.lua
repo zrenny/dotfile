@@ -69,24 +69,72 @@ map("<leader>Rw", rust("reloadWorkspace"), "reload workspace")
 -- `unsafe` code (out-of-bounds reads, use-after-free, data races, ...).
 -- Needs the nightly toolchain with the miri component (see install.sh).
 local miri_ok = false
+local function miri_available()
+  if miri_ok then return true end
+  -- RUSTUP_AUTO_INSTALL=0: without it, a missing nightly makes rustup
+  -- download the whole toolchain right here and freeze Neovim meanwhile.
+  local r = vim.system({ "cargo", "+nightly", "miri", "--version" },
+    { text = true, env = { RUSTUP_AUTO_INSTALL = "0" } }):wait(10000)
+  if r.code ~= 0 then
+    vim.notify("Miri isn't installed: run `rustup toolchain install nightly --allow-downgrade "
+      .. "--component miri,rust-src` (or rerun install.sh)", vim.log.levels.WARN)
+    return false
+  end
+  miri_ok = true
+  return true
+end
+
 local function miri(args, desc)
   return function()
-    if not miri_ok then
-      -- RUSTUP_AUTO_INSTALL=0: without it, a missing nightly makes rustup
-      -- download the whole toolchain right here and freeze Neovim meanwhile.
-      local r = vim.system({ "cargo", "+nightly", "miri", "--version" },
-        { text = true, env = { RUSTUP_AUTO_INSTALL = "0" } }):wait(10000)
-      if r.code ~= 0 then
-        vim.notify("Miri isn't installed: run `rustup toolchain install nightly --allow-downgrade "
-          .. "--component miri,rust-src` (or rerun install.sh)", vim.log.levels.WARN)
-        return
-      end
-      miri_ok = true
-    end
+    if not miri_available() then return end
     local cmd = vim.list_extend({ "cargo", "+nightly", "miri" }, args())
     local cwd = vim.fs.root(buf, "Cargo.toml") or vim.fn.getcwd()
     require("chad.runner").run(cmd, { cwd = cwd }) -- shared split, see chad/runner.lua
     vim.notify("Miri: " .. desc, vim.log.levels.INFO)
+  end
+end
+
+-- The same Miri run under both aliasing models at once, side by side:
+-- Stacked Borrows (Miri's default) on the left, Tree Borrows on the right.
+-- Other flags in your $MIRIFLAGS (e.g. -Zmiri-disable-isolation) apply to both.
+local function miri_both(args, desc)
+  return function()
+    if not miri_available() then return end
+    local cmd = vim.list_extend({ "cargo", "+nightly", "miri" }, args())
+    local cwd = vim.fs.root(buf, "Cargo.toml") or vim.fn.getcwd()
+    -- Split your MIRIFLAGS per model (whole flags, not text):
+    -- left: without Tree Borrows flags, so it really is the default model;
+    -- right: -Zmiri-tree-borrows first, then your other flags (incl. any
+    -- -Zmiri-tree-borrows-* options). -Zmiri-disable-stacked-borrows turns
+    -- aliasing checks off entirely, which would defeat the comparison: dropped.
+    local sb_flags, tb_flags = {}, { "-Zmiri-tree-borrows" }
+    for _, f in ipairs(vim.split(vim.env.MIRIFLAGS or "", "%s+", { trimempty = true })) do
+      if f == "-Zmiri-disable-stacked-borrows" or f == "-Zmiri-tree-borrows" then
+        -- skip (the latter is already first in tb_flags)
+      elseif vim.startswith(f, "-Zmiri-tree-borrows") then
+        table.insert(tb_flags, f)
+      else
+        table.insert(sb_flags, f)
+        table.insert(tb_flags, f)
+      end
+    end
+    local result = {}
+    local function finished(model)
+      return function(code)
+        result[model] = code == 0 and "ok" or "FAILED"
+        if result.sb and result.tb then
+          vim.notify(("Miri %s: Stacked Borrows %s, Tree Borrows %s"):format(desc, result.sb, result.tb),
+            (result.sb == "ok" and result.tb == "ok") and vim.log.levels.INFO or vim.log.levels.WARN)
+        end
+      end
+    end
+    require("chad.runner").run_panes({
+      { cmd = cmd, cwd = cwd, env = { MIRIFLAGS = table.concat(sb_flags, " ") },
+        title = "Miri: Stacked Borrows (default)", on_exit = finished("sb") },
+      { cmd = cmd, cwd = cwd, env = { MIRIFLAGS = table.concat(tb_flags, " ") },
+        title = "Miri: Tree Borrows", on_exit = finished("tb") },
+    })
+    vim.notify("Miri, both aliasing models: " .. desc, vim.log.levels.INFO)
   end
 end
 
@@ -121,12 +169,17 @@ local function test_under_cursor()
   return table.concat(parts, "::")
 end
 
-map("<leader>Rit", miri(function()
+local function miri_test_args()
   local name = test_under_cursor()
   -- not inside a test function: run every test
   return name and { "test", "--", name } or { "test" }
-end, "test under cursor"), "Miri: test under cursor")
+end
+map("<leader>Rit", miri(miri_test_args, "test under cursor"), "Miri: test under cursor")
 map("<leader>RiT", miri(function() return { "test" } end, "all tests"), "Miri: all tests")
+map("<leader>Rib", miri_both(miri_test_args, "test under cursor"),
+  "Miri: test under cursor, both models (Stacked + Tree Borrows)")
+map("<leader>RiB", miri_both(function() return { "test" } end, "all tests"),
+  "Miri: all tests, both models (Stacked + Tree Borrows)")
 map("<leader>Rir", miri(function() return { "run" } end, "run"), "Miri: cargo run")
 
 -- Tests with their printed output (println!, dbg!) shown live, in the
